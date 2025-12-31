@@ -1,0 +1,259 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/app_dimensions.dart';
+import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/modern/modern.dart';
+import '../providers/cart_provider.dart';
+import '../providers/payment_provider.dart';
+
+/// Payment dialog for processing cash payments
+///
+/// Shows total amount, cash received input, quick buttons,
+/// and calculates change automatically.
+class PaymentDialog extends ConsumerStatefulWidget {
+  const PaymentDialog({super.key});
+
+  /// Show the payment dialog
+  /// Returns true if payment was successful, false if cancelled
+  static Future<bool?> show(BuildContext context) {
+    return ModernDialog.show<bool>(
+      context,
+      dismissible: false,
+      child: const PaymentDialog(),
+    );
+  }
+
+  @override
+  ConsumerState<PaymentDialog> createState() => _PaymentDialogState();
+}
+
+class _PaymentDialogState extends ConsumerState<PaymentDialog> {
+  final _cashController = TextEditingController();
+  double _cashReceived = 0;
+
+  @override
+  void dispose() {
+    _cashController.dispose();
+    super.dispose();
+  }
+
+  void _setCash(double amount) {
+    setState(() {
+      _cashReceived = amount;
+      _cashController.text = amount.toInt().toString();
+    });
+  }
+
+  Future<void> _processPayment() async {
+    final total = ref.read(cartTotalProvider);
+
+    if (_cashReceived < total) {
+      ModernToast.error(context, 'Uang yang diterima kurang dari total');
+      return;
+    }
+
+    // Process payment
+    await ref.read(paymentProvider.notifier).processPayment(
+          cashReceived: _cashReceived,
+        );
+
+    final paymentState = ref.read(paymentProvider);
+
+    if (paymentState.isSuccess && mounted) {
+      // Close dialog and navigate to success screen
+      Navigator.pop(context, true);
+
+      final transactionId = paymentState.completedTransaction!.id;
+      context.go('/pos/success/$transactionId');
+    } else if (paymentState.hasError && mounted) {
+      ModernToast.error(context, paymentState.errorMessage!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = ref.watch(cartTotalProvider);
+    final paymentState = ref.watch(paymentProvider);
+    final change = _cashReceived - total;
+    final canPay = _cashReceived >= total && !paymentState.isProcessing;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 640),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppDimensions.spacing24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Pembayaran',
+                  style: AppTextStyles.h3,
+                ),
+                ModernIconButton(
+                  icon: Icons.close,
+                  onPressed: paymentState.isProcessing
+                      ? null
+                      : () => Navigator.pop(context, false),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+
+            // Total display
+            ModernCard.filled(
+              color: AppColors.primaryContainer,
+              padding: const EdgeInsets.all(AppDimensions.spacing16),
+              child: Column(
+                children: [
+                  Text(
+                    'Total',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacing4),
+                  Text(
+                    CurrencyFormatter.format(total),
+                    style: AppTextStyles.h2.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+
+            // Cash received input
+            ModernTextField(
+              controller: _cashController,
+              label: 'Uang Diterima',
+              hint: '0',
+              variant: ModernInputVariant.filled,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              leading: const Icon(Icons.payments_outlined),
+              onChanged: (value) {
+                final cleanValue =
+                    value.replaceAll('.', '').replaceAll(',', '');
+                final parsed = double.tryParse(cleanValue) ?? 0;
+                setState(() {
+                  _cashReceived = parsed;
+                });
+              },
+            ),
+            const SizedBox(height: AppDimensions.spacing16),
+
+            // Quick cash buttons
+            Wrap(
+              spacing: AppDimensions.spacing8,
+              runSpacing: AppDimensions.spacing8,
+              children: [
+                _QuickCashButton(
+                  amount: 10000,
+                  onPressed: () => _setCash(10000),
+                ),
+                _QuickCashButton(
+                  amount: 20000,
+                  onPressed: () => _setCash(20000),
+                ),
+                _QuickCashButton(
+                  amount: 50000,
+                  onPressed: () => _setCash(50000),
+                ),
+                _QuickCashButton(
+                  amount: 100000,
+                  onPressed: () => _setCash(100000),
+                ),
+                ModernButton.secondary(
+                  size: ModernSize.small,
+                  onPressed: () => _setCash(total),
+                  child: const Text('Uang Pas'),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+
+            // Change display
+            if (_cashReceived > 0) ...[
+              ModernCard.filled(
+                color:
+                    change >= 0 ? AppColors.successLight : AppColors.errorLight,
+                padding: const EdgeInsets.all(AppDimensions.spacing16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      change >= 0 ? 'Kembalian' : 'Kurang',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color:
+                            change >= 0 ? AppColors.success : AppColors.error,
+                      ),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(change.abs()),
+                      style: AppTextStyles.h4.copyWith(
+                        color:
+                            change >= 0 ? AppColors.success : AppColors.error,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacing24),
+            ],
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ModernButton.outline(
+                    onPressed: paymentState.isProcessing
+                        ? null
+                        : () => Navigator.pop(context, false),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacing12),
+                Expanded(
+                  child: ModernButton.primary(
+                    onPressed: canPay ? _processPayment : null,
+                    isLoading: paymentState.isProcessing,
+                    child: const Text('Bayar'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Quick cash button widget
+class _QuickCashButton extends StatelessWidget {
+  const _QuickCashButton({
+    required this.amount,
+    required this.onPressed,
+  });
+
+  final double amount;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ModernButton.outline(
+      size: ModernSize.small,
+      onPressed: onPressed,
+      child: Text(CurrencyFormatter.formatCompact(amount)),
+    );
+  }
+}

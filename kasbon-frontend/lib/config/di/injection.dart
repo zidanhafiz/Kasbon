@@ -14,6 +14,11 @@ import '../../features/products/domain/usecases/get_all_products.dart';
 import '../../features/products/domain/usecases/get_product.dart';
 import '../../features/products/domain/usecases/search_products.dart';
 import '../../features/products/domain/usecases/update_product.dart';
+import '../../features/transactions/data/datasources/transaction_local_datasource.dart';
+import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
+import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../features/transactions/domain/usecases/create_transaction.dart';
+import '../../features/transactions/domain/usecases/get_transaction.dart';
 import '../database/database_helper.dart';
 
 /// Global service locator instance
@@ -82,6 +87,26 @@ Future<void> configureDependencies() async {
   // Use Cases
   getIt.registerLazySingleton(
       () => GetAllCategories(getIt<CategoryRepository>()));
+
+  // ===========================================
+  // TRANSACTIONS FEATURE
+  // ===========================================
+
+  // Data Sources
+  getIt.registerLazySingleton<TransactionLocalDataSource>(
+    () => TransactionLocalDataSourceImpl(getIt<DatabaseHelper>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(getIt<TransactionLocalDataSource>()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(
+      () => CreateTransaction(getIt<TransactionRepository>()));
+  getIt.registerLazySingleton(
+      () => GetTransactionById(getIt<TransactionRepository>()));
 
   logger.i('Dependencies configured successfully');
   logger.i('Database initialized: ${databaseHelper.isInitialized}');

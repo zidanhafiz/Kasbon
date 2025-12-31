@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dev_tools/presentation/screens/design_system_showcase_screen.dart';
 import '../../features/pos/presentation/screens/pos_screen.dart';
+import '../../features/pos/presentation/screens/transaction_success_screen.dart';
 import '../../features/products/presentation/screens/product_detail_screen.dart';
 import '../../features/products/presentation/screens/product_form_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
@@ -16,6 +17,7 @@ class AppRoutes {
   static const String splash = '/';
   static const String dashboard = '/dashboard';
   static const String pos = '/pos';
+  static const String posSuccess = '/pos/success/:transactionId';
   static const String products = '/products';
   static const String productDetail = '/products/:id';
   static const String productAdd = '/products/add';
@@ -152,6 +154,19 @@ class AppRouter {
       ),
 
       // Full-screen routes (outside shell)
+      // POS Success Screen
+      GoRoute(
+        path: AppRoutes.posSuccess,
+        name: 'pos-success',
+        pageBuilder: (context, state) {
+          final transactionId = state.pathParameters['transactionId']!;
+          return _buildPage(
+            state: state,
+            child: TransactionSuccessScreen(transactionId: transactionId),
+          );
+        },
+      ),
+
       // Transaction Detail
       GoRoute(
         path: AppRoutes.transactionDetail,
