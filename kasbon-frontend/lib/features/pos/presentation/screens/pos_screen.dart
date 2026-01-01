@@ -9,6 +9,7 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../domain/entities/cart_item.dart';
+import '../../domain/entities/cart_operation_result.dart';
 import '../providers/cart_provider.dart';
 import '../providers/pos_search_provider.dart';
 import '../widgets/cart_item_tile.dart';
@@ -288,16 +289,27 @@ class _PosScreenState extends ConsumerState<PosScreen> {
               product: product,
               quantityInCart: quantityInCart,
               onTap: () {
-                ref.read(cartProvider.notifier).addProduct(product);
-                // Show feedback
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${product.name} ditambahkan ke keranjang'),
+                final result =
+                    ref.read(cartProvider.notifier).addProduct(product);
+
+                // Show appropriate feedback based on result
+                if (result.isSuccess) {
+                  ModernToast.success(
+                    context,
+                    '${product.name} ditambahkan ke keranjang',
                     duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                  );
+                } else if (result.result == CartOperationResult.outOfStock) {
+                  ModernToast.error(
+                    context,
+                    '${product.name} habis',
+                  );
+                } else if (result.result == CartOperationResult.exceedsStock) {
+                  ModernToast.warning(
+                    context,
+                    'Stok tidak mencukupi. Tersisa ${result.availableStock} ${result.unit}',
+                  );
+                }
               },
             );
           },
@@ -489,9 +501,16 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         return CartItemTile(
           item: item,
           onQuantityChanged: (qty) {
-            ref
+            final result = ref
                 .read(cartProvider.notifier)
                 .updateQuantity(item.product.id, qty);
+
+            if (result.result == CartOperationResult.exceedsStock) {
+              ModernToast.warning(
+                context,
+                'Stok maksimal ${result.availableStock} ${result.unit}',
+              );
+            }
           },
           onRemove: () {
             ref.read(cartProvider.notifier).removeProduct(item.product.id);

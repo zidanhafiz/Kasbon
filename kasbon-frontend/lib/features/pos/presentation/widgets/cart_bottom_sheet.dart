@@ -6,6 +6,7 @@ import '../../../../config/theme/app_dimensions.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/modern/modern.dart';
+import '../../domain/entities/cart_operation_result.dart';
 import '../providers/cart_provider.dart';
 import 'cart_item_tile.dart';
 import 'payment_dialog.dart';
@@ -120,9 +121,16 @@ class CartBottomSheet extends ConsumerWidget {
                     return CartItemTile(
                       item: item,
                       onQuantityChanged: (qty) {
-                        ref
+                        final result = ref
                             .read(cartProvider.notifier)
                             .updateQuantity(item.product.id, qty);
+
+                        if (result.result == CartOperationResult.exceedsStock) {
+                          ModernToast.warning(
+                            context,
+                            'Stok maksimal ${result.availableStock} ${result.unit}',
+                          );
+                        }
                       },
                       onRemove: () {
                         ref

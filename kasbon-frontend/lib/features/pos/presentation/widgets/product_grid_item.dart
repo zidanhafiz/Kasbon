@@ -28,15 +28,20 @@ class ProductGridItem extends StatelessWidget {
   /// Current quantity of this product in cart (for visual feedback)
   final int quantityInCart;
 
+  /// Whether this product is disabled (out of stock)
+  bool get _isDisabled => product.isOutOfStock;
+
   @override
   Widget build(BuildContext context) {
     final hasInCart = quantityInCart > 0;
 
-    return ModernCard.outlined(
-      padding: EdgeInsets.zero,
-      borderColor: hasInCart ? AppColors.primary : AppColors.border,
-      onTap: onTap,
-      child: Column(
+    return Opacity(
+      opacity: _isDisabled ? 0.5 : 1.0,
+      child: ModernCard.outlined(
+        padding: EdgeInsets.zero,
+        borderColor: hasInCart ? AppColors.primary : AppColors.border,
+        onTap: _isDisabled ? null : onTap,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Product image
@@ -104,6 +109,7 @@ class ProductGridItem extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

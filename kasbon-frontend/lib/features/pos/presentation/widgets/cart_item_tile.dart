@@ -93,6 +93,7 @@ class CartItemTile extends StatelessWidget {
               ModernQuantityStepper.compact(
                 value: item.quantity,
                 minValue: 1,
+                maxValue: item.product.stock,
                 onChanged: onQuantityChanged,
               ),
               const SizedBox(width: AppDimensions.spacing12),
