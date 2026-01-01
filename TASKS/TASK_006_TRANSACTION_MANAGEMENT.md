@@ -3,7 +3,7 @@
 **Priority:** P0 (Critical)
 **Complexity:** LOW
 **Phase:** MVP
-**Status:** Not Started
+**Status:** Completed (Jan 2, 2025)
 
 ---
 
@@ -27,69 +27,71 @@ Build transaction history screen with list view, filtering, and transaction deta
 ### 1. Domain Layer
 
 #### Entities
-- [ ] Create `lib/features/transactions/domain/entities/transaction.dart`
-- [ ] Create `lib/features/transactions/domain/entities/transaction_item.dart`
+- [x] Create `lib/features/transactions/domain/entities/transaction.dart` (existed from TASK_005)
+- [x] Create `lib/features/transactions/domain/entities/transaction_item.dart` (existed from TASK_005)
+- [x] Create `lib/features/transactions/domain/entities/date_filter.dart` (NEW)
 
 #### Repository Interface
-- [ ] Create `lib/features/transactions/domain/repositories/transaction_repository.dart`
+- [x] Create `lib/features/transactions/domain/repositories/transaction_repository.dart` (existed from TASK_005)
 
 #### Use Cases
-- [ ] Create `lib/features/transactions/domain/usecases/get_transactions.dart`
-- [ ] Create `lib/features/transactions/domain/usecases/get_transaction_detail.dart`
-- [ ] Create `lib/features/transactions/domain/usecases/get_transactions_by_date.dart`
+- [x] Create `lib/features/transactions/domain/usecases/get_transactions.dart` (NEW)
+- [x] Create `lib/features/transactions/domain/usecases/get_transaction.dart` (existed as GetTransactionById)
 
 ### 2. Data Layer
 
 #### Data Sources
-- [ ] Update `transaction_local_datasource.dart`
-  - getTransactions(dateFrom, dateTo)
-  - getTransactionById(id) with items
-  - getTransactionsToday()
-  - searchTransactions(query)
+- [x] `transaction_local_datasource.dart` already has required methods from TASK_005
 
 ### 3. Presentation Layer
 
 #### Providers
-- [ ] Create `lib/features/transactions/presentation/providers/transactions_provider.dart`
+- [x] Create `lib/features/transactions/presentation/providers/transactions_provider.dart`
   - transactionsProvider (filtered list)
   - transactionDetailProvider
-  - dateRangeFilterProvider
+  - dateFilterProvider
+  - customDateRangeProvider
+  - groupedTransactionsProvider
 
 #### Screens
-- [ ] Create `lib/features/transactions/presentation/screens/transaction_list_screen.dart`
-  - Date range filter (tabs or dropdown)
-  - Transaction list (newest first)
+- [x] Create `lib/features/transactions/presentation/screens/transaction_list_screen.dart`
+  - Date range filter (chips)
+  - Transaction list grouped by date
+  - Sticky date headers
   - Pull to refresh
   - Empty state
 
-- [ ] Create `lib/features/transactions/presentation/screens/transaction_detail_screen.dart`
+- [x] Create `lib/features/transactions/presentation/screens/transaction_detail_screen.dart`
   - Transaction header info
   - List of items
   - Payment info
-  - Receipt view/share button
+  - Receipt view/share buttons (placeholder for TASK_008)
 
 #### Widgets
-- [ ] Create `lib/features/transactions/presentation/widgets/transaction_card.dart`
+- [x] Create `lib/features/transactions/presentation/widgets/transaction_card.dart`
   - Transaction number
   - Date and time
   - Total amount
   - Item count summary
   - Payment status badge
 
-- [ ] Create `lib/features/transactions/presentation/widgets/date_filter_chips.dart`
+- [x] Create `lib/features/transactions/presentation/widgets/date_filter_chips.dart`
   - Hari Ini
   - Kemarin
   - 7 Hari
   - 30 Hari
   - Kustom (date picker)
 
-- [ ] Create `lib/features/transactions/presentation/widgets/transaction_item_tile.dart`
+- [x] Create `lib/features/transactions/presentation/widgets/transaction_item_tile.dart`
   - Product name
   - Quantity × Price
   - Subtotal
 
+- [x] Create `lib/features/transactions/presentation/widgets/transaction_date_header.dart`
+  - Sticky header for date groups
+
 ### 4. Navigation
-- [ ] Add transaction routes to GoRouter
+- [x] Add transaction routes to GoRouter
   - /transactions (list)
   - /transactions/:id (detail)
 
@@ -264,16 +266,16 @@ extension DateFilterExtension on DateFilter {
 
 ## Acceptance Criteria
 
-- [ ] Can view list of all transactions
-- [ ] Transactions sorted newest first
-- [ ] Can filter by date range (today, yesterday, 7 days, 30 days)
-- [ ] Can select custom date range
-- [ ] Can view transaction detail
-- [ ] Detail shows all items with quantities and prices
-- [ ] Detail shows payment information
-- [ ] Can navigate to receipt from detail
-- [ ] Empty state shown when no transactions
-- [ ] Pull to refresh works
+- [x] Can view list of all transactions
+- [x] Transactions sorted newest first
+- [x] Can filter by date range (today, yesterday, 7 days, 30 days)
+- [x] Can select custom date range
+- [x] Can view transaction detail
+- [x] Detail shows all items with quantities and prices
+- [x] Detail shows payment information
+- [x] Can navigate to receipt from detail (placeholder - TASK_008)
+- [x] Empty state shown when no transactions
+- [x] Pull to refresh works
 
 ---
 

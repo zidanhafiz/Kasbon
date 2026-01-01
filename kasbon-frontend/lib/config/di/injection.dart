@@ -19,6 +19,7 @@ import '../../features/transactions/data/repositories/transaction_repository_imp
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/usecases/create_transaction.dart';
 import '../../features/transactions/domain/usecases/get_transaction.dart';
+import '../../features/transactions/domain/usecases/get_transactions.dart';
 import '../database/database_helper.dart';
 
 /// Global service locator instance
@@ -107,6 +108,8 @@ Future<void> configureDependencies() async {
       () => CreateTransaction(getIt<TransactionRepository>()));
   getIt.registerLazySingleton(
       () => GetTransactionById(getIt<TransactionRepository>()));
+  getIt.registerLazySingleton(
+      () => GetTransactions(getIt<TransactionRepository>()));
 
   logger.i('Dependencies configured successfully');
   logger.i('Database initialized: ${databaseHelper.isInitialized}');

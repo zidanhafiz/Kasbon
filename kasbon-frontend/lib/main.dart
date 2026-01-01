@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -57,6 +58,18 @@ class KasbonApp extends StatelessWidget {
 
       // Theme
       theme: AppTheme.light,
+
+      // Localization
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('id', 'ID'), // Indonesian
+        Locale('en', 'US'), // English fallback
+      ],
+      locale: const Locale('id', 'ID'),
 
       // Router
       routerConfig: AppRouter.router,

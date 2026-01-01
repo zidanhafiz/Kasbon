@@ -8,6 +8,8 @@ import '../../features/pos/presentation/screens/transaction_success_screen.dart'
 import '../../features/products/presentation/screens/product_detail_screen.dart';
 import '../../features/products/presentation/screens/product_form_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
+import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
+import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../../shared/modern/modern.dart';
 
 /// Route names for the application
@@ -121,14 +123,28 @@ class AppRouter {
             ],
           ),
 
-          // Transactions (list only in shell)
+          // Transactions with nested detail route
           GoRoute(
             path: AppRoutes.transactions,
             name: 'transactions',
             pageBuilder: (context, state) => _buildPage(
               state: state,
-              child: const _PlaceholderScreen(title: 'Riwayat Transaksi'),
+              child: const TransactionListScreen(),
             ),
+            routes: [
+              // Transaction Detail - /transactions/:id
+              GoRoute(
+                path: ':id',
+                name: 'transaction-detail',
+                pageBuilder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return _buildPage(
+                    state: state,
+                    child: TransactionDetailScreen(transactionId: id),
+                  );
+                },
+              ),
+            ],
           ),
 
           // Reports
@@ -163,19 +179,6 @@ class AppRouter {
           return _buildPage(
             state: state,
             child: TransactionSuccessScreen(transactionId: transactionId),
-          );
-        },
-      ),
-
-      // Transaction Detail
-      GoRoute(
-        path: AppRoutes.transactionDetail,
-        name: 'transaction-detail',
-        pageBuilder: (context, state) {
-          final id = state.pathParameters['id'];
-          return _buildPage(
-            state: state,
-            child: _PlaceholderScreen(title: 'Detail Transaksi: $id'),
           );
         },
       ),
