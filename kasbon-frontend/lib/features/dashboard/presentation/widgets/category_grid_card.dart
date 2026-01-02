@@ -90,33 +90,56 @@ class CategoryGridCard extends StatelessWidget {
     final icColor = iconColor ?? AppColors.primary;
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-      elevation: 0,
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+        splashColor: icColor.withValues(alpha: 0.1),
+        highlightColor: icColor.withValues(alpha: 0.05),
         child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacing16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacing12,
+            vertical: AppDimensions.spacing12,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
             border: Border.all(
               color: AppColors.border,
               width: 1,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: icColor.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
-              // Icon container
+              // Icon container with gradient background
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: bgColor,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      bgColor,
+                      bgColor.withValues(alpha: 0.7),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                  boxShadow: [
+                    BoxShadow(
+                      color: icColor.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   icon,
@@ -124,16 +147,24 @@ class CategoryGridCard extends StatelessWidget {
                   size: AppDimensions.iconLarge,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: AppDimensions.spacing12),
               // Label
-              Text(
-                label,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              ),
+              // Chevron indicator
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textTertiary,
+                size: AppDimensions.iconMedium,
               ),
             ],
           ),
@@ -161,44 +192,31 @@ class MenuCategory {
 }
 
 /// Default menu categories for the KASBON POS app
+/// Matches sidebar navigation items (excluding Beranda)
 class DefaultMenuCategories {
   DefaultMenuCategories._();
 
   static const List<MenuCategory> items = [
     MenuCategory(
-      label: 'Penjualan',
+      label: 'Kasir',
       icon: Icons.point_of_sale,
       routePath: '/pos',
       backgroundColor: Color(0xFFDBEAFE),
       iconColor: Color(0xFF2563EB),
     ),
     MenuCategory(
-      label: 'Penyimpanan',
+      label: 'Produk',
       icon: Icons.inventory_2,
       routePath: '/products',
       backgroundColor: Color(0xFFDCFCE7),
       iconColor: Color(0xFF10B981),
     ),
     MenuCategory(
-      label: 'Pelanggan',
-      icon: Icons.people,
-      routePath: '/customers',
+      label: 'Transaksi',
+      icon: Icons.receipt_long,
+      routePath: '/transactions',
       backgroundColor: Color(0xFFFEF3C7),
       iconColor: Color(0xFFF59E0B),
-    ),
-    MenuCategory(
-      label: 'Pegawai',
-      icon: Icons.badge,
-      routePath: '/employees',
-      backgroundColor: Color(0xFFE0E7FF),
-      iconColor: Color(0xFF6366F1),
-    ),
-    MenuCategory(
-      label: 'Produk',
-      icon: Icons.category,
-      routePath: '/products',
-      backgroundColor: Color(0xFFFCE7F3),
-      iconColor: Color(0xFFEC4899),
     ),
     MenuCategory(
       label: 'Laporan',
@@ -206,6 +224,13 @@ class DefaultMenuCategories {
       routePath: '/reports',
       backgroundColor: Color(0xFFCFFAFE),
       iconColor: Color(0xFF06B6D4),
+    ),
+    MenuCategory(
+      label: 'Pengaturan',
+      icon: Icons.settings,
+      routePath: '/settings',
+      backgroundColor: Color(0xFFF3F4F6),
+      iconColor: Color(0xFF6B7280),
     ),
   ];
 }

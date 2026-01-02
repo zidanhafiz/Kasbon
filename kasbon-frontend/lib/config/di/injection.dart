@@ -14,6 +14,10 @@ import '../../features/products/domain/usecases/get_all_products.dart';
 import '../../features/products/domain/usecases/get_product.dart';
 import '../../features/products/domain/usecases/search_products.dart';
 import '../../features/products/domain/usecases/update_product.dart';
+import '../../features/dashboard/data/datasources/dashboard_local_datasource.dart';
+import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
+import '../../features/dashboard/domain/usecases/get_dashboard_summary.dart';
 import '../../features/transactions/data/datasources/transaction_local_datasource.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
@@ -110,6 +114,25 @@ Future<void> configureDependencies() async {
       () => GetTransactionById(getIt<TransactionRepository>()));
   getIt.registerLazySingleton(
       () => GetTransactions(getIt<TransactionRepository>()));
+
+  // ===========================================
+  // DASHBOARD FEATURE
+  // ===========================================
+
+  // Data Sources
+  getIt.registerLazySingleton<DashboardLocalDataSource>(
+    () => DashboardLocalDataSourceImpl(getIt<DatabaseHelper>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(getIt<DashboardLocalDataSource>()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(
+    () => GetDashboardSummary(getIt<DashboardRepository>()),
+  );
 
   logger.i('Dependencies configured successfully');
   logger.i('Database initialized: ${databaseHelper.isInitialized}');
