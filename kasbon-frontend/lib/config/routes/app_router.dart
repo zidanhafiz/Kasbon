@@ -8,6 +8,7 @@ import '../../features/pos/presentation/screens/transaction_success_screen.dart'
 import '../../features/products/presentation/screens/product_detail_screen.dart';
 import '../../features/products/presentation/screens/product_form_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
+import '../../features/receipt/presentation/screens/receipt_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../../shared/modern/modern.dart';
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String reports = '/reports';
   static const String settings = '/settings';
   static const String designSystem = '/dev/design-system';
+  static const String receipt = '/receipt/:transactionId';
 }
 
 /// Application router configuration using GoRouter
@@ -191,6 +193,19 @@ class AppRouter {
           state: state,
           child: const DesignSystemShowcaseScreen(),
         ),
+      ),
+
+      // Receipt Screen - Full screen receipt view with sharing options
+      GoRoute(
+        path: AppRoutes.receipt,
+        name: 'receipt',
+        pageBuilder: (context, state) {
+          final transactionId = state.pathParameters['transactionId']!;
+          return _buildPage(
+            state: state,
+            child: ReceiptScreen(transactionId: transactionId),
+          );
+        },
       ),
     ],
 

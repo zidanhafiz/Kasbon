@@ -18,6 +18,10 @@ import '../../features/dashboard/data/datasources/dashboard_local_datasource.dar
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
 import '../../features/dashboard/domain/usecases/get_dashboard_summary.dart';
+import '../../features/receipt/data/datasources/shop_settings_local_datasource.dart';
+import '../../features/receipt/data/repositories/shop_settings_repository_impl.dart';
+import '../../features/receipt/domain/repositories/shop_settings_repository.dart';
+import '../../features/receipt/domain/usecases/get_shop_settings.dart';
 import '../../features/transactions/data/datasources/transaction_local_datasource.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
@@ -132,6 +136,25 @@ Future<void> configureDependencies() async {
   // Use Cases
   getIt.registerLazySingleton(
     () => GetDashboardSummary(getIt<DashboardRepository>()),
+  );
+
+  // ===========================================
+  // RECEIPT / SHOP SETTINGS FEATURE
+  // ===========================================
+
+  // Data Sources
+  getIt.registerLazySingleton<ShopSettingsLocalDataSource>(
+    () => ShopSettingsLocalDataSourceImpl(getIt<DatabaseHelper>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<ShopSettingsRepository>(
+    () => ShopSettingsRepositoryImpl(getIt<ShopSettingsLocalDataSource>()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(
+    () => GetShopSettings(getIt<ShopSettingsRepository>()),
   );
 
   logger.i('Dependencies configured successfully');

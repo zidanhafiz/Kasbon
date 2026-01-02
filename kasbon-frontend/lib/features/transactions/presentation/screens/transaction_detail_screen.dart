@@ -8,7 +8,9 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../../core/utils/share_helper.dart';
 import '../../../../shared/modern/modern.dart';
+import '../../../receipt/presentation/providers/receipt_provider.dart';
 import '../../domain/entities/transaction.dart';
 import '../providers/transactions_provider.dart';
 import '../widgets/transaction_item_tile.dart';
@@ -47,12 +49,16 @@ class TransactionDetailScreen extends ConsumerWidget {
           message: 'Gagal memuat detail transaksi',
           onRetry: () => ref.invalidate(transactionDetailProvider(transactionId)),
         ),
-        data: (transaction) => _buildContent(context, transaction),
+        data: (transaction) => _buildContent(context, ref, transaction),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, Transaction transaction) {
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    Transaction transaction,
+  ) {
     final isTablet = context.isTabletOrDesktop;
 
     return SingleChildScrollView(
@@ -72,7 +78,7 @@ class TransactionDetailScreen extends ConsumerWidget {
           _buildPaymentCard(transaction),
           const SizedBox(height: AppDimensions.spacing24),
           // Action buttons
-          _buildActionButtons(context),
+          _buildActionButtons(context, ref, transaction),
         ],
       ),
     );
@@ -191,15 +197,22 @@ class TransactionDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(
+    BuildContext context,
+    WidgetRef ref,
+    Transaction transaction,
+  ) {
     final isTablet = context.isTabletOrDesktop;
+
+    // Generate receipt text for sharing
+    final receiptText = ref.watch(receiptTextFromTransactionProvider(transaction));
 
     final receiptButton = ModernButton.primary(
       fullWidth: true,
       leadingIcon: Icons.receipt_outlined,
       onPressed: () {
-        // Receipt view will be implemented in TASK_008
-        ModernToast.info(context, 'Fitur struk akan segera tersedia');
+        // Navigate to receipt screen
+        context.push('/receipt/${transaction.id}');
       },
       child: const Text('Lihat Struk'),
     );
@@ -208,8 +221,12 @@ class TransactionDetailScreen extends ConsumerWidget {
       fullWidth: true,
       leadingIcon: Icons.share_outlined,
       onPressed: () {
-        // Share receipt will be implemented in TASK_008
-        ModernToast.info(context, 'Fitur bagikan struk akan segera tersedia');
+        // Show share options
+        ShareHelper.showShareOptions(
+          context,
+          text: receiptText,
+          subject: 'Struk ${transaction.transactionNumber}',
+        );
       },
       child: const Text('Bagikan Struk'),
     );
