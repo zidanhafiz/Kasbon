@@ -232,5 +232,13 @@ class DefaultMenuCategories {
       backgroundColor: Color(0xFFF3F4F6),
       iconColor: Color(0xFF6B7280),
     ),
+    // Dev Tools (for development only)
+    MenuCategory(
+      label: 'Dev Tools',
+      icon: Icons.developer_mode,
+      routePath: '/dev',
+      backgroundColor: Color(0xFFFCE7F3),
+      iconColor: Color(0xFFEC4899),
+    ),
   ];
 }

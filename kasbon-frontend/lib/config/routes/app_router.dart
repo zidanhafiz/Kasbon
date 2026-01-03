@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dev_tools/presentation/screens/design_system_showcase_screen.dart';
+import '../../features/dev_tools/presentation/screens/dev_seed_screen.dart';
+import '../../features/dev_tools/presentation/screens/dev_tools_screen.dart';
 import '../../features/pos/presentation/screens/pos_screen.dart';
 import '../../features/pos/presentation/screens/transaction_success_screen.dart';
 import '../../features/products/presentation/screens/product_detail_screen.dart';
@@ -29,7 +31,9 @@ class AppRoutes {
   static const String transactionDetail = '/transactions/:id';
   static const String reports = '/reports';
   static const String settings = '/settings';
+  static const String dev = '/dev';
   static const String designSystem = '/dev/design-system';
+  static const String devSeed = '/dev/seed';
   static const String receipt = '/receipt/:transactionId';
 }
 
@@ -168,6 +172,16 @@ class AppRouter {
               child: const _PlaceholderScreen(title: 'Pengaturan'),
             ),
           ),
+
+          // Dev Tools (development only)
+          GoRoute(
+            path: AppRoutes.dev,
+            name: 'dev',
+            pageBuilder: (context, state) => _buildPage(
+              state: state,
+              child: const DevToolsScreen(),
+            ),
+          ),
         ],
       ),
 
@@ -192,6 +206,16 @@ class AppRouter {
         pageBuilder: (context, state) => _buildPage(
           state: state,
           child: const DesignSystemShowcaseScreen(),
+        ),
+      ),
+
+      // Dev Tools - Seed Data
+      GoRoute(
+        path: AppRoutes.devSeed,
+        name: 'dev-seed',
+        pageBuilder: (context, state) => _buildPage(
+          state: state,
+          child: const DevSeedScreen(),
         ),
       ),
 
