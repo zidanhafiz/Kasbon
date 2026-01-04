@@ -34,10 +34,13 @@ class _ProductBulkActionsBarState extends ConsumerState<ProductBulkActionsBar> {
 
     if (selectionCount == 0) return const SizedBox.shrink();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return ModernCard.outlined(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacing16),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
+        horizontal: AppDimensions.spacing12,
         vertical: AppDimensions.spacing12,
       ),
       child: Row(
@@ -51,17 +54,21 @@ class _ProductBulkActionsBarState extends ConsumerState<ProductBulkActionsBar> {
                     .read(productSelectionProvider.notifier)
                     .clearSelection(),
             iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             color: AppColors.textSecondary,
             tooltip: 'Batal pilih',
           ),
-          const SizedBox(width: AppDimensions.spacing8),
-          Text(
-            '$selectionCount produk dipilih',
-            style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textPrimary,
+          const SizedBox(width: AppDimensions.spacing4),
+          Expanded(
+            child: Text(
+              isMobile ? '$selectionCount dipilih' : '$selectionCount produk dipilih',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
 
           // Bulk action buttons
           if (_isLoading)
@@ -71,31 +78,53 @@ class _ProductBulkActionsBarState extends ConsumerState<ProductBulkActionsBar> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           else ...[
-            ModernButton.secondary(
-              onPressed: () => _handleUpdateStatus(context),
-              size: ModernSize.small,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.toggle_on_outlined, size: 18),
-                  SizedBox(width: AppDimensions.spacing4),
-                  Text('Ubah Status'),
-                ],
+            // On mobile, show icon-only buttons
+            if (isMobile) ...[
+              IconButton(
+                onPressed: () => _handleUpdateStatus(context),
+                icon: const Icon(Icons.toggle_on_outlined),
+                iconSize: 22,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                color: AppColors.primary,
+                tooltip: 'Ubah Status',
               ),
-            ),
-            const SizedBox(width: AppDimensions.spacing8),
-            ModernButton.destructive(
-              onPressed: () => _handleBulkDelete(context),
-              size: ModernSize.small,
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.delete_outline, size: 18),
-                  SizedBox(width: AppDimensions.spacing4),
-                  Text('Hapus'),
-                ],
+              IconButton(
+                onPressed: () => _handleBulkDelete(context),
+                icon: const Icon(Icons.delete_outline),
+                iconSize: 22,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                color: AppColors.error,
+                tooltip: 'Hapus',
               ),
-            ),
+            ] else ...[
+              ModernButton.secondary(
+                onPressed: () => _handleUpdateStatus(context),
+                size: ModernSize.small,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.toggle_on_outlined, size: 18),
+                    SizedBox(width: AppDimensions.spacing4),
+                    Text('Ubah Status'),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacing8),
+              ModernButton.destructive(
+                onPressed: () => _handleBulkDelete(context),
+                size: ModernSize.small,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.delete_outline, size: 18),
+                    SizedBox(width: AppDimensions.spacing4),
+                    Text('Hapus'),
+                  ],
+                ),
+              ),
+            ],
           ],
         ],
       ),

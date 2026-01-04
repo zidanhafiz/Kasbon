@@ -15,7 +15,7 @@ import '../providers/product_selection_provider.dart';
 
 /// Table view widget for product list
 /// Displays products in a tabular format with selection support
-class ProductTableView extends ConsumerWidget {
+class ProductTableView extends ConsumerStatefulWidget {
   const ProductTableView({
     super.key,
     required this.products,
@@ -24,14 +24,39 @@ class ProductTableView extends ConsumerWidget {
   final List<Product> products;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedIds = ref.watch(productSelectionProvider);
+  ConsumerState<ProductTableView> createState() => _ProductTableViewState();
+}
 
+class _ProductTableViewState extends ConsumerState<ProductTableView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIds = ref.watch(productSelectionProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    // On mobile, use horizontal scrollable table
+    if (isMobile) {
+      return _buildMobileTable(selectedIds);
+    }
+
+    return _buildDesktopTable(selectedIds);
+  }
+
+  Widget _buildDesktopTable(Set<String> selectedIds) {
     return ModernDataTable<Product>(
-      columns: _buildColumns(context, ref),
-      items: products,
+      columns: _buildColumns(false),
+      items: widget.products,
       idGetter: (product) => product.id,
       selectedIds: selectedIds,
+      shrinkWrap: true, // Fit table to content, no vertical scrolling
       onSelectionChanged: (id, selected) {
         if (selected) {
           ref.read(productSelectionProvider.notifier).select(id);
@@ -43,7 +68,7 @@ class ProductTableView extends ConsumerWidget {
         if (selectAll) {
           ref
               .read(productSelectionProvider.notifier)
-              .selectAll(products.map((p) => p.id).toList());
+              .selectAll(widget.products.map((p) => p.id).toList());
         } else {
           ref.read(productSelectionProvider.notifier).clearSelection();
         }
@@ -56,16 +81,48 @@ class ProductTableView extends ConsumerWidget {
     );
   }
 
-  List<ModernTableColumn<Product>> _buildColumns(
-      BuildContext context, WidgetRef ref) {
+  /// Build mobile-optimized table with horizontal scroll
+  Widget _buildMobileTable(Set<String> selectedIds) {
+    return ModernDataTable<Product>(
+      columns: _buildColumns(true),
+      items: widget.products,
+      idGetter: (product) => product.id,
+      selectedIds: selectedIds,
+      shrinkWrap: true, // Fit table to content, no vertical scrolling
+      horizontalScrollController: _scrollController,
+      onSelectionChanged: (id, selected) {
+        if (selected) {
+          ref.read(productSelectionProvider.notifier).select(id);
+        } else {
+          ref.read(productSelectionProvider.notifier).deselect(id);
+        }
+      },
+      onSelectAll: (selectAll) {
+        if (selectAll) {
+          ref
+              .read(productSelectionProvider.notifier)
+              .selectAll(widget.products.map((p) => p.id).toList());
+        } else {
+          ref.read(productSelectionProvider.notifier).clearSelection();
+        }
+      },
+      onRowTap: (product) {
+        context.push('${AppRoutes.products}/${product.id}');
+      },
+      rowHeight: 56.0, // Slightly smaller rows on mobile
+      headerHeight: 44.0,
+    );
+  }
+
+  List<ModernTableColumn<Product>> _buildColumns(bool isMobile) {
     return [
       // Image column
       ModernTableColumn<Product>(
         id: 'image',
         header: const SizedBox.shrink(),
-        width: 64,
+        width: isMobile ? 48 : 64,
         alignment: Alignment.center,
-        cellBuilder: (product) => _buildProductImage(product),
+        cellBuilder: (product) => _buildProductImage(product, isMobile),
       ),
       // Name column
       ModernTableColumn<Product>(
@@ -78,7 +135,7 @@ class ProductTableView extends ConsumerWidget {
           ),
         ),
         flex: 2,
-        minWidth: 150,
+        minWidth: isMobile ? 120 : 150,
         cellBuilder: (product) => Text(
           product.name,
           style: AppTextStyles.bodyMedium.copyWith(
@@ -88,41 +145,43 @@ class ProductTableView extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      // SKU column
-      ModernTableColumn<Product>(
-        id: 'sku',
-        header: Text(
-          'SKU',
-          style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
+      // SKU column - hide on mobile
+      if (!isMobile)
+        ModernTableColumn<Product>(
+          id: 'sku',
+          header: Text(
+            'SKU',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          width: 120,
+          cellBuilder: (product) => Text(
+            product.sku,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontFamily: AppTextStyles.fontFamilyMono,
+            ),
           ),
         ),
-        width: 120,
-        cellBuilder: (product) => Text(
-          product.sku,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-            fontFamily: AppTextStyles.fontFamilyMono,
-          ),
-        ),
-      ),
       // Price column
       ModernTableColumn<Product>(
         id: 'price',
         header: Text(
-          'Harga Jual',
+          'Harga',
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        width: 130,
+        width: isMobile ? 100 : 130,
         alignment: Alignment.centerRight,
         cellBuilder: (product) => Text(
           CurrencyFormatter.format(product.sellingPrice),
           style: AppTextStyles.priceSmall.copyWith(
             color: AppColors.primary,
+            fontSize: isMobile ? 12 : 14,
           ),
         ),
       ),
@@ -136,7 +195,7 @@ class ProductTableView extends ConsumerWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        width: 80,
+        width: isMobile ? 60 : 80,
         alignment: Alignment.center,
         cellBuilder: (product) => Text(
           '${product.stock}',
@@ -156,44 +215,45 @@ class ProductTableView extends ConsumerWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        width: 100,
+        width: isMobile ? 80 : 100,
         alignment: Alignment.center,
-        cellBuilder: (product) => _buildStatusBadge(product),
+        cellBuilder: (product) => _buildStatusBadge(product, isMobile),
       ),
       // Actions column
       ModernTableColumn<Product>(
         id: 'actions',
         header: const SizedBox.shrink(),
-        width: 56,
+        width: isMobile ? 40 : 56,
         alignment: Alignment.center,
         cellBuilder: (product) => _buildActionButtons(context, product),
       ),
     ];
   }
 
-  Widget _buildProductImage(Product product) {
+  Widget _buildProductImage(Product product, bool isMobile) {
+    final size = isMobile ? 36.0 : 48.0;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
       child: Container(
-        width: 48,
-        height: 48,
+        width: size,
+        height: size,
         color: AppColors.surfaceVariant,
         child: product.imageUrl != null && product.imageUrl!.isNotEmpty
             ? Image.network(
                 product.imageUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                errorBuilder: (_, __, ___) => _buildImagePlaceholder(isMobile),
               )
-            : _buildImagePlaceholder(),
+            : _buildImagePlaceholder(isMobile),
       ),
     );
   }
 
-  Widget _buildImagePlaceholder() {
-    return const Center(
+  Widget _buildImagePlaceholder(bool isMobile) {
+    return Center(
       child: Icon(
         Icons.inventory_2_outlined,
-        size: 24,
+        size: isMobile ? 18 : 24,
         color: AppColors.textTertiary,
       ),
     );
@@ -209,17 +269,17 @@ class ProductTableView extends ConsumerWidget {
     return AppColors.textPrimary;
   }
 
-  Widget _buildStatusBadge(Product product) {
+  Widget _buildStatusBadge(Product product, bool isMobile) {
     if (!product.isActive) {
-      return const ModernBadge.neutral(label: 'Nonaktif');
+      return ModernBadge.neutral(label: isMobile ? 'Off' : 'Nonaktif');
     }
     if (product.isOutOfStock) {
-      return const ModernBadge.error(label: 'Habis');
+      return ModernBadge.error(label: isMobile ? 'Habis' : 'Habis');
     }
     if (product.isLowStock) {
-      return const ModernBadge.warning(label: 'Rendah');
+      return ModernBadge.warning(label: isMobile ? 'Low' : 'Rendah');
     }
-    return const ModernBadge.success(label: 'Aktif');
+    return ModernBadge.success(label: isMobile ? 'Ok' : 'Aktif');
   }
 
   Widget _buildActionButtons(BuildContext context, Product product) {

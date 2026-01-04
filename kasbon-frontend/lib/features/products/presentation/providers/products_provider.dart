@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/di/injection.dart';
+import '../../../../core/entities/paginated_result.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_filter.dart';
 import '../../domain/usecases/create_product.dart';
 import '../../domain/usecases/delete_product.dart';
 import '../../domain/usecases/get_all_products.dart';
+import '../../domain/usecases/get_paginated_products.dart';
 import '../../domain/usecases/get_product.dart';
 import '../../domain/usecases/search_products.dart';
 import '../../domain/usecases/update_product.dart';
@@ -125,6 +127,131 @@ final filteredProductsProvider =
   }
 
   return products;
+});
+
+// ===========================================
+// PAGINATION PROVIDERS
+// ===========================================
+
+/// Unified product filter state provider with pagination
+final productFilterProvider =
+    StateNotifierProvider.autoDispose<ProductFilterNotifier, ProductFilter>(
+  (ref) => ProductFilterNotifier(),
+);
+
+/// State notifier for managing product filter and pagination
+class ProductFilterNotifier extends StateNotifier<ProductFilter> {
+  ProductFilterNotifier() : super(const ProductFilter());
+
+  /// Set search query (resets to page 1)
+  void setSearchQuery(String? query) {
+    final trimmedQuery = query?.trim();
+    if (trimmedQuery == state.searchQuery) return;
+    state = state
+        .copyWith(
+          searchQuery: trimmedQuery,
+          clearSearchQuery: trimmedQuery == null || trimmedQuery.isEmpty,
+        )
+        .resetToFirstPage();
+  }
+
+  /// Set category filter (resets to page 1)
+  void setCategoryId(String? categoryId) {
+    if (categoryId == state.categoryId) return;
+    state = state
+        .copyWith(categoryId: categoryId, clearCategoryId: categoryId == null)
+        .resetToFirstPage();
+  }
+
+  /// Set stock filter (resets to page 1)
+  void setStockFilter(StockFilter filter) {
+    if (filter == state.stockFilter) return;
+    state = state.copyWith(stockFilter: filter).resetToFirstPage();
+  }
+
+  /// Set sort option (resets to page 1)
+  void setSortOption(ProductSortOption option) {
+    if (option == state.sortOption) return;
+    state = state.copyWith(sortOption: option).resetToFirstPage();
+  }
+
+  /// Go to specific page
+  void goToPage(int page) {
+    if (page < 1 || page == state.page) return;
+    state = state.copyWith(page: page);
+  }
+
+  /// Go to next page
+  void nextPage() {
+    state = state.copyWith(page: state.page + 1);
+  }
+
+  /// Go to previous page
+  void previousPage() {
+    if (state.page > 1) {
+      state = state.copyWith(page: state.page - 1);
+    }
+  }
+
+  /// Reset all filters to default
+  void resetFilters() {
+    state = const ProductFilter();
+  }
+}
+
+/// Provider for paginated products (reacts to filter changes)
+final paginatedProductsProvider =
+    FutureProvider.autoDispose<PaginatedResult<Product>>((ref) async {
+  final filter = ref.watch(productFilterProvider);
+  final useCase = getIt<GetPaginatedProducts>();
+  final result = await useCase(filter);
+
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (paginatedResult) => paginatedResult,
+  );
+});
+
+/// Helper class for pagination display info
+class PaginationInfo {
+  final int currentPage;
+  final int totalPages;
+  final int totalCount;
+  final int startIndex;
+  final int endIndex;
+  final bool hasPrevious;
+  final bool hasNext;
+
+  const PaginationInfo({
+    required this.currentPage,
+    required this.totalPages,
+    required this.totalCount,
+    required this.startIndex,
+    required this.endIndex,
+    required this.hasPrevious,
+    required this.hasNext,
+  });
+
+  /// Display string like "1-8 dari 45 produk"
+  String get displayText => totalCount == 0
+      ? '0 produk'
+      : '$startIndex-$endIndex dari $totalCount produk';
+}
+
+/// Provider for pagination info (convenience provider)
+final paginationInfoProvider = Provider.autoDispose<PaginationInfo?>((ref) {
+  return ref.watch(paginatedProductsProvider).maybeWhen(
+        data: (result) => PaginationInfo(
+          currentPage: result.currentPage,
+          totalPages: result.totalPages,
+          totalCount: result.totalCount,
+          startIndex: result.startIndex,
+          endIndex: result.endIndex,
+          hasPrevious: result.hasPreviousPage,
+          hasNext: result.hasNextPage,
+        ),
+        orElse: () => null,
+      );
 });
 
 /// Form state for creating/updating products

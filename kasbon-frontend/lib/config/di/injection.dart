@@ -11,6 +11,7 @@ import '../../features/products/domain/repositories/product_repository.dart';
 import '../../features/products/domain/usecases/create_product.dart';
 import '../../features/products/domain/usecases/delete_product.dart';
 import '../../features/products/domain/usecases/get_all_products.dart';
+import '../../features/products/domain/usecases/get_paginated_products.dart';
 import '../../features/products/domain/usecases/get_product.dart';
 import '../../features/products/domain/usecases/search_products.dart';
 import '../../features/products/domain/usecases/update_product.dart';
@@ -78,6 +79,8 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => CreateProduct(getIt<ProductRepository>()));
   getIt.registerLazySingleton(() => UpdateProduct(getIt<ProductRepository>()));
   getIt.registerLazySingleton(() => DeleteProduct(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(
+      () => GetPaginatedProducts(getIt<ProductRepository>()));
 
   // ===========================================
   // CATEGORIES FEATURE

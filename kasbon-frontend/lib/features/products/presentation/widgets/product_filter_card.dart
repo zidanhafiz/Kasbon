@@ -33,40 +33,37 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
-    final selectedCategoryId = ref.watch(categoryFilterProvider);
-    final selectedStockFilter = ref.watch(stockFilterProvider);
-    final selectedSortOption = ref.watch(sortOptionProvider);
+    final filter = ref.watch(productFilterProvider);
     final viewMode = ref.watch(productViewModeProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
 
     return ModernCard.outlined(
       padding: const EdgeInsets.all(AppDimensions.spacing16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Field, View Toggle, and Sort Dropdown in one row
+          // Search Field - full width on mobile
+          ModernSearchField(
+            controller: _searchController,
+            hint: 'Cari produk...',
+            onChanged: (value) {
+              ref.read(productFilterProvider.notifier).setSearchQuery(value);
+            },
+            onClear: () {
+              ref.read(productFilterProvider.notifier).setSearchQuery(null);
+            },
+          ),
+          const SizedBox(height: AppDimensions.spacing12),
+          // View Toggle and Sort Dropdown - separate row on mobile
           Row(
             children: [
-              // Search Field
-              Expanded(
-                child: ModernSearchField(
-                  controller: _searchController,
-                  hint: 'Cari produk...',
-                  onChanged: (value) {
-                    ref.read(searchQueryProvider.notifier).state = value;
-                  },
-                  onClear: () {
-                    ref.read(searchQueryProvider.notifier).state = '';
-                  },
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacing12),
               // View Toggle
               _buildViewToggle(viewMode),
               const SizedBox(width: AppDimensions.spacing12),
-              // Sort Dropdown
-              SizedBox(
-                width: 150,
-                child: _buildSortDropdown(selectedSortOption),
+              // Sort Dropdown - flexible width
+              Expanded(
+                child: _buildSortDropdown(filter.sortOption, isMobile),
               ),
             ],
           ),
@@ -85,7 +82,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
             child: categoriesAsync.when(
               data: (categories) => _buildCategoryChips(
                 categories,
-                selectedCategoryId,
+                filter.categoryId,
               ),
               loading: () => const Center(
                 child: SizedBox(
@@ -94,7 +91,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              error: (_, __) => _buildCategoryChips([], selectedCategoryId),
+              error: (_, __) => _buildCategoryChips([], filter.categoryId),
             ),
           ),
           const SizedBox(height: AppDimensions.spacing12),
@@ -109,7 +106,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
           const SizedBox(height: AppDimensions.spacing8),
           SizedBox(
             height: 36,
-            child: _buildStockFilterChips(selectedStockFilter),
+            child: _buildStockFilterChips(filter.stockFilter),
           ),
         ],
       ),
@@ -131,7 +128,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
             selected: selectedCategoryId == null,
             onSelected: (selected) {
               if (selected) {
-                ref.read(categoryFilterProvider.notifier).state = null;
+                ref.read(productFilterProvider.notifier).setCategoryId(null);
               }
             },
             selectedColor: AppColors.primary,
@@ -158,8 +155,9 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
               label: Text(category.name),
               selected: isSelected,
               onSelected: (selected) {
-                ref.read(categoryFilterProvider.notifier).state =
-                    selected ? category.id : null;
+                ref
+                    .read(productFilterProvider.notifier)
+                    .setCategoryId(selected ? category.id : null);
               },
               selectedColor: AppColors.primary,
               labelStyle: TextStyle(
@@ -192,7 +190,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
             selected: isSelected,
             onSelected: (selected) {
               if (selected) {
-                ref.read(stockFilterProvider.notifier).state = filter;
+                ref.read(productFilterProvider.notifier).setStockFilter(filter);
               }
             },
             selectedColor: _getStockFilterColor(filter),
@@ -226,7 +224,7 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
     }
   }
 
-  Widget _buildSortDropdown(ProductSortOption selectedOption) {
+  Widget _buildSortDropdown(ProductSortOption selectedOption, bool isMobile) {
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing12),
@@ -248,12 +246,15 @@ class _ProductFilterCardState extends ConsumerState<ProductFilterCard> {
           items: ProductSortOption.values.map((option) {
             return DropdownMenuItem<ProductSortOption>(
               value: option,
-              child: Text(option.label),
+              child: Text(
+                isMobile ? option.shortLabel : option.label,
+                overflow: TextOverflow.ellipsis,
+              ),
             );
           }).toList(),
           onChanged: (value) {
             if (value != null) {
-              ref.read(sortOptionProvider.notifier).state = value;
+              ref.read(productFilterProvider.notifier).setSortOption(value);
             }
           },
         ),

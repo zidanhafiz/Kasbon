@@ -7,7 +7,6 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
-import '../../domain/entities/product_filter.dart';
 import '../providers/product_selection_provider.dart';
 import '../providers/products_provider.dart';
 import '../widgets/product_bulk_actions_bar.dart';
@@ -43,7 +42,7 @@ class ProductListScreen extends ConsumerWidget {
         children: [
           RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(productsProvider);
+              ref.invalidate(paginatedProductsProvider);
             },
             child: _buildContent(context, ref, viewMode, hasSelection),
           ),
@@ -74,6 +73,9 @@ class ProductListScreen extends ConsumerWidget {
   Widget _buildGridContent(BuildContext context, WidgetRef ref, bool hasSelection) {
     final padding = context.horizontalPadding;
 
+    // Get keyboard height to avoid content being covered
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
     return CustomScrollView(
       slivers: [
         // Filter Card
@@ -92,61 +94,109 @@ class ProductListScreen extends ConsumerWidget {
             ),
           ),
         // Product Grid with bottom padding for FAB clearance
-        _buildProductGrid(context, ref, hasSelection),
+        _buildProductGrid(context, ref, hasSelection, keyboardHeight),
       ],
     );
   }
 
   Widget _buildTableContent(BuildContext context, WidgetRef ref, bool hasSelection) {
-    final productsAsync = ref.watch(filteredProductsProvider);
+    final paginatedAsync = ref.watch(paginatedProductsProvider);
+    final paginationInfo = ref.watch(paginationInfoProvider);
+    final filter = ref.watch(productFilterProvider);
     final padding = context.horizontalPadding;
 
-    return Column(
-      children: [
+    // Get keyboard height to avoid content being covered
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    // Calculate bottom padding: bottom nav on mobile + spacing + keyboard
+    final bottomPadding = context.isMobile
+        ? AppDimensions.bottomNavHeight + AppDimensions.spacing16 + keyboardHeight
+        : AppDimensions.spacing16 + keyboardHeight;
+
+    return CustomScrollView(
+      slivers: [
         // Filter Card
-        Padding(
-          padding: EdgeInsets.all(padding),
-          child: const ProductFilterCard(),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: const ProductFilterCard(),
+          ),
         ),
         // Bulk Actions Bar (shown when items are selected)
         if (hasSelection)
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: padding),
-            child: const ProductBulkActionsBar(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: padding),
+              child: const ProductBulkActionsBar(),
+            ),
           ),
-        // Table View with bottom padding for FAB clearance
-        Expanded(
-          child: productsAsync.when(
-            data: (products) {
-              if (products.isEmpty) {
-                final searchQuery = ref.watch(searchQueryProvider);
-                if (searchQuery.isNotEmpty ||
-                    ref.watch(categoryFilterProvider) != null ||
-                    ref.watch(stockFilterProvider) != StockFilter.all) {
-                  return ModernEmptyState.search(
+        // Table View
+        paginatedAsync.when(
+          data: (result) {
+            if (result.isEmpty) {
+              if (filter.hasActiveFilters) {
+                return SliverFillRemaining(
+                  child: ModernEmptyState.search(
                     message: 'Tidak ada produk yang cocok dengan filter',
-                  );
-                }
-                return ModernEmptyState.list(
+                  ),
+                );
+              }
+              return SliverFillRemaining(
+                child: ModernEmptyState.list(
                   title: 'Belum Ada Produk',
                   message: 'Tambahkan produk pertama Anda',
                   actionLabel: 'Tambah Produk',
                   onAction: () => context.push(AppRoutes.productAdd),
-                );
-              }
-              return Padding(
-                padding: EdgeInsets.only(
-                  left: padding,
-                  right: padding,
-                  bottom: 100, // FAB clearance
                 ),
-                child: ProductTableView(products: products),
               );
-            },
-            loading: () => const Center(child: ModernLoading()),
-            error: (error, _) => ModernErrorState.generic(
+            }
+
+            final products = result.items;
+
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Table fits exactly to content - no scrolling needed
+                    ProductTableView(products: products),
+                    // Gap before pagination
+                    if (paginationInfo != null && paginationInfo.totalPages > 1)
+                      const SizedBox(height: AppDimensions.spacing16),
+                    // Pagination Controls
+                    if (paginationInfo != null && paginationInfo.totalPages > 1)
+                      ModernPaginationControls(
+                        currentPage: paginationInfo.currentPage,
+                        totalPages: paginationInfo.totalPages,
+                        displayText: paginationInfo.displayText,
+                        onPageChanged: (page) => ref
+                            .read(productFilterProvider.notifier)
+                            .goToPage(page),
+                        onPreviousPage: paginationInfo.hasPrevious
+                            ? () => ref
+                                .read(productFilterProvider.notifier)
+                                .previousPage()
+                            : null,
+                        onNextPage: paginationInfo.hasNext
+                            ? () => ref
+                                .read(productFilterProvider.notifier)
+                                .nextPage()
+                            : null,
+                      ),
+                    SizedBox(height: bottomPadding),
+                  ],
+                ),
+              ),
+            );
+          },
+          loading: () => const SliverFillRemaining(
+            child: Center(child: ModernLoading()),
+          ),
+          error: (error, _) => SliverFillRemaining(
+            child: ModernErrorState.generic(
               message: 'Gagal memuat produk. ${error.toString()}',
-              onRetry: () => ref.invalidate(productsProvider),
+              onRetry: () => ref.invalidate(paginatedProductsProvider),
             ),
           ),
         ),
@@ -154,18 +204,18 @@ class ProductListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProductGrid(BuildContext context, WidgetRef ref, bool hasSelection) {
-    final productsAsync = ref.watch(filteredProductsProvider);
-    final searchQuery = ref.watch(searchQueryProvider);
+  Widget _buildProductGrid(
+      BuildContext context, WidgetRef ref, bool hasSelection, double keyboardHeight) {
+    final paginatedAsync = ref.watch(paginatedProductsProvider);
+    final paginationInfo = ref.watch(paginationInfoProvider);
+    final filter = ref.watch(productFilterProvider);
     final selectedIds = ref.watch(productSelectionProvider);
 
-    return productsAsync.when(
-      data: (products) {
-        if (products.isEmpty) {
+    return paginatedAsync.when(
+      data: (result) {
+        if (result.isEmpty) {
           // Check if it's a search/filter result or truly empty
-          if (searchQuery.isNotEmpty ||
-              ref.watch(categoryFilterProvider) != null ||
-              ref.watch(stockFilterProvider) != StockFilter.all) {
+          if (filter.hasActiveFilters) {
             return SliverFillRemaining(
               child: ModernEmptyState.search(
                 message: 'Tidak ada produk yang cocok dengan filter',
@@ -183,37 +233,81 @@ class ProductListScreen extends ConsumerWidget {
           );
         }
 
+        final products = result.items;
+
         // Calculate responsive grid columns
         final columns = _getGridColumns(context);
         final padding = context.horizontalPadding;
 
-        return SliverPadding(
-          padding: EdgeInsets.fromLTRB(padding, 0, padding, 100), // 100dp bottom for FAB clearance
-          sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              mainAxisSpacing: AppDimensions.spacing12,
-              crossAxisSpacing: AppDimensions.spacing12,
-              childAspectRatio: 0.7, // Taller cards for product info
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final product = products[index];
-                final isSelected = selectedIds.contains(product.id);
+        // Calculate bottom padding for bottom nav on mobile + spacing + keyboard
+        final bottomPadding = context.isMobile
+            ? AppDimensions.bottomNavHeight + AppDimensions.spacing16 + keyboardHeight
+            : AppDimensions.spacing16 + keyboardHeight;
 
-                return ProductGridItem(
-                  product: product,
-                  isSelectionMode: hasSelection,
-                  isSelected: isSelected,
-                  onTap: hasSelection
-                      ? () => _toggleSelection(ref, product.id, isSelected)
-                      : () => context.push('/products/${product.id}'),
-                  onLongPress: () => _enterSelectionMode(ref, product.id),
-                );
-              },
-              childCount: products.length,
+        // Aspect ratio for grid items (lower = taller cards)
+        const aspectRatio = 0.65;
+
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: AppDimensions.spacing12,
+                  crossAxisSpacing: AppDimensions.spacing12,
+                  childAspectRatio: aspectRatio,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final product = products[index];
+                    final isSelected = selectedIds.contains(product.id);
+
+                    return ProductGridItem(
+                      product: product,
+                      isSelectionMode: hasSelection,
+                      isSelected: isSelected,
+                      onTap: hasSelection
+                          ? () => _toggleSelection(ref, product.id, isSelected)
+                          : () => context.push('/products/${product.id}'),
+                      onLongPress: () => _enterSelectionMode(ref, product.id),
+                    );
+                  },
+                  childCount: products.length,
+                ),
+              ),
             ),
-          ),
+            // Gap before pagination
+            if (paginationInfo != null && paginationInfo.totalPages > 1)
+              const SliverToBoxAdapter(
+                child: SizedBox(height: AppDimensions.spacing16),
+              ),
+            // Pagination Controls - with horizontal padding matching grid
+            if (paginationInfo != null && paginationInfo.totalPages > 1)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: padding),
+                  child: ModernPaginationControls(
+                    currentPage: paginationInfo.currentPage,
+                    totalPages: paginationInfo.totalPages,
+                    displayText: paginationInfo.displayText,
+                    onPageChanged: (page) =>
+                        ref.read(productFilterProvider.notifier).goToPage(page),
+                    onPreviousPage: paginationInfo.hasPrevious
+                        ? () =>
+                            ref.read(productFilterProvider.notifier).previousPage()
+                        : null,
+                    onNextPage: paginationInfo.hasNext
+                        ? () => ref.read(productFilterProvider.notifier).nextPage()
+                        : null,
+                  ),
+                ),
+              ),
+            // Bottom padding for FAB
+            SliverToBoxAdapter(
+              child: SizedBox(height: bottomPadding),
+            ),
+          ],
         );
       },
       loading: () => const SliverFillRemaining(
@@ -222,7 +316,7 @@ class ProductListScreen extends ConsumerWidget {
       error: (error, _) => SliverFillRemaining(
         child: ModernErrorState.generic(
           message: 'Gagal memuat produk. ${error.toString()}',
-          onRetry: () => ref.invalidate(productsProvider),
+          onRetry: () => ref.invalidate(paginatedProductsProvider),
         ),
       ),
     );
@@ -250,12 +344,8 @@ class ProductListScreen extends ConsumerWidget {
       return 2; // Small mobile
     } else if (width < 900) {
       return 2; // Large mobile
-    } else if (width < 1100) {
-      return 3; // Tablet
-    } else if (width < 1300) {
-      return 4; // Small desktop
     } else {
-      return 5; // Large desktop
+      return 5; // Tablet and above - 5 columns
     }
   }
 }

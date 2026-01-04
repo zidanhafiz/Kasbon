@@ -1,6 +1,7 @@
 import '../../../../config/database/database_helper.dart';
 import '../../../../core/constants/database_constants.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../domain/entities/product_filter.dart';
 import '../models/product_model.dart';
 
 /// Abstract interface for Product local data source
@@ -28,6 +29,23 @@ abstract class ProductLocalDataSource {
 
   /// Get products by category ID
   Future<List<ProductModel>> getProductsByCategory(String categoryId);
+
+  /// Get paginated products with SQL-level filtering
+  Future<List<ProductModel>> getProductsPaginated({
+    String? searchQuery,
+    String? categoryId,
+    StockFilter stockFilter = StockFilter.all,
+    ProductSortOption sortOption = ProductSortOption.nameAsc,
+    required int limit,
+    required int offset,
+  });
+
+  /// Get total count of products matching filters (for pagination metadata)
+  Future<int> getProductsCount({
+    String? searchQuery,
+    String? categoryId,
+    StockFilter stockFilter = StockFilter.all,
+  });
 }
 
 /// Implementation of ProductLocalDataSource using SQLite
@@ -193,6 +211,144 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         message: 'Gagal mengambil produk berdasarkan kategori',
         originalError: e,
       );
+    }
+  }
+
+  @override
+  Future<List<ProductModel>> getProductsPaginated({
+    String? searchQuery,
+    String? categoryId,
+    StockFilter stockFilter = StockFilter.all,
+    ProductSortOption sortOption = ProductSortOption.nameAsc,
+    required int limit,
+    required int offset,
+  }) async {
+    try {
+      // Build dynamic WHERE clause
+      final whereConditions = <String>['${DatabaseConstants.colIsActive} = ?'];
+      final whereArgs = <Object?>[1];
+
+      // Search filter
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        whereConditions.add('${DatabaseConstants.colName} LIKE ?');
+        whereArgs.add('%$searchQuery%');
+      }
+
+      // Category filter
+      if (categoryId != null) {
+        whereConditions.add('${DatabaseConstants.colCategoryId} = ?');
+        whereArgs.add(categoryId);
+      }
+
+      // Stock filter
+      switch (stockFilter) {
+        case StockFilter.available:
+          whereConditions.add(
+              '${DatabaseConstants.colStock} > ${DatabaseConstants.colMinStock}');
+          break;
+        case StockFilter.lowStock:
+          whereConditions.add(
+              '${DatabaseConstants.colStock} > 0 AND ${DatabaseConstants.colStock} <= ${DatabaseConstants.colMinStock}');
+          break;
+        case StockFilter.outOfStock:
+          whereConditions.add('${DatabaseConstants.colStock} <= 0');
+          break;
+        case StockFilter.all:
+          // No additional filter
+          break;
+      }
+
+      // Build ORDER BY clause
+      final orderBy = _buildOrderByClause(sortOption);
+
+      final results = await _databaseHelper.query(
+        DatabaseConstants.tableProducts,
+        where: whereConditions.join(' AND '),
+        whereArgs: whereArgs,
+        orderBy: orderBy,
+        limit: limit,
+        offset: offset,
+      );
+
+      return results.map((map) => ProductModel.fromMap(map)).toList();
+    } catch (e) {
+      throw DatabaseException(
+        message: 'Gagal mengambil daftar produk',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
+  Future<int> getProductsCount({
+    String? searchQuery,
+    String? categoryId,
+    StockFilter stockFilter = StockFilter.all,
+  }) async {
+    try {
+      // Build dynamic WHERE clause (same logic as getProductsPaginated)
+      final whereConditions = <String>['${DatabaseConstants.colIsActive} = ?'];
+      final whereArgs = <Object?>[1];
+
+      // Search filter
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        whereConditions.add('${DatabaseConstants.colName} LIKE ?');
+        whereArgs.add('%$searchQuery%');
+      }
+
+      // Category filter
+      if (categoryId != null) {
+        whereConditions.add('${DatabaseConstants.colCategoryId} = ?');
+        whereArgs.add(categoryId);
+      }
+
+      // Stock filter
+      switch (stockFilter) {
+        case StockFilter.available:
+          whereConditions.add(
+              '${DatabaseConstants.colStock} > ${DatabaseConstants.colMinStock}');
+          break;
+        case StockFilter.lowStock:
+          whereConditions.add(
+              '${DatabaseConstants.colStock} > 0 AND ${DatabaseConstants.colStock} <= ${DatabaseConstants.colMinStock}');
+          break;
+        case StockFilter.outOfStock:
+          whereConditions.add('${DatabaseConstants.colStock} <= 0');
+          break;
+        case StockFilter.all:
+          // No additional filter
+          break;
+      }
+
+      final result = await _databaseHelper.rawQuery(
+        'SELECT COUNT(*) as count FROM ${DatabaseConstants.tableProducts} WHERE ${whereConditions.join(' AND ')}',
+        whereArgs,
+      );
+
+      return result.first['count'] as int? ?? 0;
+    } catch (e) {
+      throw DatabaseException(
+        message: 'Gagal menghitung jumlah produk',
+        originalError: e,
+      );
+    }
+  }
+
+  /// Build ORDER BY clause based on sort option
+  String _buildOrderByClause(ProductSortOption option) {
+    switch (option) {
+      case ProductSortOption.nameAsc:
+        return '${DatabaseConstants.colName} ASC';
+      case ProductSortOption.nameDesc:
+        return '${DatabaseConstants.colName} DESC';
+      case ProductSortOption.priceAsc:
+        return '${DatabaseConstants.colSellingPrice} ASC';
+      case ProductSortOption.priceDesc:
+        return '${DatabaseConstants.colSellingPrice} DESC';
+      case ProductSortOption.stockAsc:
+        return '${DatabaseConstants.colStock} ASC';
+      case ProductSortOption.stockDesc:
+        return '${DatabaseConstants.colStock} DESC';
     }
   }
 }

@@ -1,8 +1,10 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/entities/paginated_result.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/product.dart';
+import '../../domain/entities/product_filter.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_local_datasource.dart';
 import '../models/product_model.dart';
@@ -111,6 +113,42 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final models = await _localDataSource.getProductsByCategory(categoryId);
       return Right(models.map((m) => m.toEntity()).toList());
+    } on DatabaseException catch (e) {
+      return Left(DatabaseFailure(message: e.message));
+    } catch (e) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, PaginatedResult<Product>>> getProductsPaginated(
+      ProductFilter filter) async {
+    try {
+      // Get total count for pagination metadata
+      final totalCount = await _localDataSource.getProductsCount(
+        searchQuery: filter.searchQuery,
+        categoryId: filter.categoryId,
+        stockFilter: filter.stockFilter,
+      );
+
+      // Get paginated items
+      final models = await _localDataSource.getProductsPaginated(
+        searchQuery: filter.searchQuery,
+        categoryId: filter.categoryId,
+        stockFilter: filter.stockFilter,
+        sortOption: filter.sortOption,
+        limit: filter.pageSize,
+        offset: filter.offset,
+      );
+
+      final products = models.map((m) => m.toEntity()).toList();
+
+      return Right(PaginatedResult<Product>(
+        items: products,
+        totalCount: totalCount,
+        currentPage: filter.page,
+        pageSize: filter.pageSize,
+      ));
     } on DatabaseException catch (e) {
       return Left(DatabaseFailure(message: e.message));
     } catch (e) {

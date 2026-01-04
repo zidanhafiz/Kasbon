@@ -42,6 +42,8 @@ class ModernDataTable<T> extends StatelessWidget {
     this.isLoading = false,
     this.horizontalScrollController,
     this.checkboxColumnWidth = 48.0,
+    this.showHorizontalScrollbar = false,
+    this.shrinkWrap = false,
   });
 
   /// Column definitions
@@ -86,6 +88,14 @@ class ModernDataTable<T> extends StatelessWidget {
   /// Width of checkbox column
   final double checkboxColumnWidth;
 
+  /// Whether to show horizontal scrollbar (useful for mobile)
+  final bool showHorizontalScrollbar;
+
+  /// Whether to shrink wrap the table to fit content exactly
+  /// When true, the table will not be scrollable vertically
+  /// Useful when the parent already provides a fixed height
+  final bool shrinkWrap;
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -114,6 +124,52 @@ class ModernDataTable<T> extends StatelessWidget {
         final tableWidth =
             totalColumnsWidth > availableWidth ? totalColumnsWidth : null;
 
+        // Calculate exact data rows height when shrinkWrap is enabled
+        // Height = (items * rowHeight) + ((items - 1) * separatorHeight)
+        final dataRowsHeight = shrinkWrap
+            ? (items.length * rowHeight) + (items.length - 1)
+            : null;
+
+        Widget scrollContent = SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          controller: horizontalScrollController,
+          physics: const BouncingScrollPhysics(),
+          child: SizedBox(
+            width: tableWidth ?? availableWidth,
+            child: Column(
+              mainAxisSize: shrinkWrap ? MainAxisSize.min : MainAxisSize.max,
+              children: [
+                // Header
+                _buildHeader(columnWidths),
+                // Divider
+                const Divider(
+                    height: 1, thickness: 1, color: AppColors.border),
+                // Data rows - use explicit height when shrinkWrap, Expanded otherwise
+                if (shrinkWrap)
+                  SizedBox(
+                    height: dataRowsHeight,
+                    child: _buildDataRows(columnWidths),
+                  )
+                else
+                  Expanded(
+                    child: _buildDataRows(columnWidths),
+                  ),
+              ],
+            ),
+          ),
+        );
+
+        // Wrap with Scrollbar if enabled
+        if (showHorizontalScrollbar && horizontalScrollController != null) {
+          scrollContent = Scrollbar(
+            controller: horizontalScrollController,
+            thumbVisibility: true,
+            thickness: 6,
+            radius: const Radius.circular(3),
+            child: scrollContent,
+          );
+        }
+
         return Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -122,26 +178,7 @@ class ModernDataTable<T> extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              controller: horizontalScrollController,
-              child: SizedBox(
-                width: tableWidth ?? availableWidth,
-                child: Column(
-                  children: [
-                    // Header
-                    _buildHeader(columnWidths),
-                    // Divider
-                    const Divider(
-                        height: 1, thickness: 1, color: AppColors.border),
-                    // Data rows
-                    Expanded(
-                      child: _buildDataRows(columnWidths),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: scrollContent,
           ),
         );
       },
@@ -240,6 +277,10 @@ class ModernDataTable<T> extends StatelessWidget {
   Widget _buildDataRows(Map<String, double> columnWidths) {
     return ListView.separated(
       itemCount: items.length,
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap
+          ? const NeverScrollableScrollPhysics()
+          : const AlwaysScrollableScrollPhysics(),
       separatorBuilder: (_, __) => const Divider(
         height: 1,
         thickness: 1,

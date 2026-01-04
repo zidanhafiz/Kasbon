@@ -35,6 +35,9 @@ class ProductGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect tablet mode for responsive styling
+    final isTablet = MediaQuery.of(context).size.width >= 900;
+
     return GestureDetector(
       onLongPress: onLongPress,
       child: ModernCard.outlined(
@@ -110,34 +113,63 @@ class ProductGridItem extends StatelessWidget {
             // Product Info - wrapped in Expanded to prevent overflow
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacing12),
+                padding: const EdgeInsets.all(AppDimensions.spacing8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  // Use compact layout on tablet, spaceBetween on mobile
+                  mainAxisAlignment: isTablet
+                      ? MainAxisAlignment.start
+                      : MainAxisAlignment.spaceBetween,
                   children: [
-                    // Product Name - takes remaining space
-                    Expanded(
-                      child: Text(
-                        product.name,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacing4),
-                    // Price
+                    // Product Name - larger font on tablet
                     Text(
-                      CurrencyFormatter.format(product.sellingPrice),
-                      style: AppTextStyles.priceSmall.copyWith(
-                        color: AppColors.primary,
+                      product.name,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: isTablet ? 14 : null,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: AppDimensions.spacing4),
-                    // Stock Indicator
-                    StockIndicator(
-                      stock: product.stock,
-                      minStock: product.minStock,
+                    // Small gap on tablet for compact layout
+                    if (isTablet) const SizedBox(height: 2),
+                    // SKU
+                    Text(
+                      product.sku,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // Push price/stock to bottom on tablet
+                    if (isTablet) const Spacer(),
+                    // Price and Stock Row - larger font on tablet
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Price
+                        Flexible(
+                          child: Text(
+                            CurrencyFormatter.format(product.sellingPrice),
+                            style: AppTextStyles.priceSmall.copyWith(
+                              color: AppColors.primary,
+                              fontSize: isTablet ? 14 : 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.spacing4),
+                        // Stock Indicator
+                        StockIndicator(
+                          stock: product.stock,
+                          minStock: product.minStock,
+                          compact: true,
+                        ),
+                      ],
                     ),
                   ],
                 ),
