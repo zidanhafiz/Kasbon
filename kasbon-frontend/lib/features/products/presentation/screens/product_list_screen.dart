@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,11 +16,30 @@ import '../widgets/product_grid_item.dart';
 import '../widgets/product_table_view.dart';
 
 /// Screen displaying list of all products with search and filter functionality
-class ProductListScreen extends ConsumerWidget {
+class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductListScreen> createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends ConsumerState<ProductListScreen> {
+  late final KeyboardVisibilityController _keyboardVisibilityController;
+  bool _isKeyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _keyboardVisibilityController = KeyboardVisibilityController();
+    _keyboardVisibilityController.onChange.listen((bool visible) {
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final viewMode = ref.watch(productViewModeProvider);
     final hasSelection = ref.watch(productSelectionProvider).isNotEmpty;
 
@@ -46,17 +66,18 @@ class ProductListScreen extends ConsumerWidget {
             },
             child: _buildContent(context, ref, viewMode, hasSelection),
           ),
-          // FAB positioned based on device type
-          Positioned(
-            right: AppDimensions.spacing16,
-            bottom: fabBottomOffset,
-            child: FloatingActionButton(
-              onPressed: () => context.push(AppRoutes.productAdd),
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              child: const Icon(Icons.add),
+          // FAB positioned based on device type - hidden when keyboard is visible
+          if (!_isKeyboardVisible)
+            Positioned(
+              right: AppDimensions.spacing16,
+              bottom: fabBottomOffset,
+              child: FloatingActionButton(
+                onPressed: () => context.push(AppRoutes.productAdd),
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                child: const Icon(Icons.add),
+              ),
             ),
-          ),
         ],
       ),
     );

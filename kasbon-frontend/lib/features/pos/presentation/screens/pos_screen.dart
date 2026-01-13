@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -35,7 +36,20 @@ class PosScreen extends ConsumerStatefulWidget {
 
 class _PosScreenState extends ConsumerState<PosScreen> {
   final TextEditingController _searchController = TextEditingController();
+  late final KeyboardVisibilityController _keyboardVisibilityController;
   bool _isCartExpanded = true;
+  bool _isKeyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _keyboardVisibilityController = KeyboardVisibilityController();
+    _keyboardVisibilityController.onChange.listen((bool visible) {
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -94,13 +108,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             ),
           ],
         ),
-        // Floating cart summary bar - positioned above bottom nav
-        const Positioned(
-          bottom: bottomNavHeight,
-          left: 0,
-          right: 0,
-          child: CartSummaryBar(),
-        ),
+        // Floating cart summary bar - positioned above bottom nav, hidden when keyboard is visible
+        if (!_isKeyboardVisible)
+          const Positioned(
+            bottom: bottomNavHeight,
+            left: 0,
+            right: 0,
+            child: CartSummaryBar(),
+          ),
       ],
     );
   }
@@ -147,8 +162,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             ),
           ],
         ),
-        // FAB when cart is collapsed
-        if (!_isCartExpanded) _buildCartFab(),
+        // FAB when cart is collapsed - hidden when keyboard is visible
+        if (!_isCartExpanded && !_isKeyboardVisible) _buildCartFab(),
       ],
     );
   }
