@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../providers/navigation_sidebar_provider.dart';
 
 /// Navigation item data for ModernAppShell
 class ModernNavItem {
@@ -112,7 +114,7 @@ const List<ModernNavItem> defaultTabletNavItems = [
 ///   currentPath: '/dashboard',
 /// )
 /// ```
-class ModernAppShell extends StatefulWidget {
+class ModernAppShell extends ConsumerStatefulWidget {
   const ModernAppShell({
     super.key,
     required this.child,
@@ -153,12 +155,10 @@ class ModernAppShell extends StatefulWidget {
   final VoidCallback? onFabPressed;
 
   @override
-  State<ModernAppShell> createState() => _ModernAppShellState();
+  ConsumerState<ModernAppShell> createState() => _ModernAppShellState();
 }
 
-class _ModernAppShellState extends State<ModernAppShell> {
-  bool _isSidebarExpanded = false;
-
+class _ModernAppShellState extends ConsumerState<ModernAppShell> {
   List<ModernNavItem> get _mobileItems =>
       widget.mobileNavItems ?? defaultMobileNavItems;
 
@@ -191,9 +191,8 @@ class _ModernAppShellState extends State<ModernAppShell> {
   }
 
   void _toggleSidebar() {
-    setState(() {
-      _isSidebarExpanded = !_isSidebarExpanded;
-    });
+    ref.read(navigationSidebarExpandedProvider.notifier).state =
+        !ref.read(navigationSidebarExpandedProvider);
   }
 
   /// Get the actual current path from GoRouter for nested routes
@@ -240,6 +239,7 @@ class _ModernAppShellState extends State<ModernAppShell> {
 
   Widget _buildTabletShell(String currentPath) {
     final currentIndex = _getNavIndexFromPath(currentPath, _tabletItems);
+    final isSidebarExpanded = ref.watch(navigationSidebarExpandedProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -252,7 +252,7 @@ class _ModernAppShellState extends State<ModernAppShell> {
               items: _tabletItems,
               currentIndex: currentIndex,
               onTap: (index) => _onNavigate(_tabletItems[index].routePath),
-              isExpanded: _isSidebarExpanded,
+              isExpanded: isSidebarExpanded,
               onToggleExpanded: _toggleSidebar,
             ),
             // Main content area

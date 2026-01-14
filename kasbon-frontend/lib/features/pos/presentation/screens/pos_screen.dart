@@ -8,10 +8,12 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
+import '../../../../shared/providers/navigation_sidebar_provider.dart';
 import '../../../categories/presentation/providers/categories_provider.dart';
 import '../../domain/entities/cart_item.dart';
 import '../../domain/entities/cart_operation_result.dart';
 import '../providers/cart_provider.dart';
+import '../providers/pos_pagination_provider.dart';
 import '../providers/pos_search_provider.dart';
 import '../widgets/cart_item_tile.dart';
 import '../widgets/cart_summary_bar.dart';
@@ -36,9 +38,13 @@ class PosScreen extends ConsumerStatefulWidget {
 
 class _PosScreenState extends ConsumerState<PosScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   late final KeyboardVisibilityController _keyboardVisibilityController;
   bool _isCartExpanded = true;
   bool _isKeyboardVisible = false;
+
+  /// Threshold for triggering load more (pixels from bottom)
+  static const double _loadMoreThreshold = 200.0;
 
   @override
   void initState() {
@@ -49,11 +55,27 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         _isKeyboardVisible = visible;
       });
     });
+
+    // Add scroll listener for infinite scroll
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+
+    // Check if user scrolled near the bottom
+    if (maxScroll - currentScroll <= _loadMoreThreshold) {
+      ref.read(posPaginationProvider.notifier).loadMore();
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -121,6 +143,21 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Widget _buildTabletLayout() {
+    final isNavSidebarExpanded = ref.watch(navigationSidebarExpandedProvider);
+
+    // Calculate grid columns based on sidebar visibility:
+    // - Cart hidden → 5 columns (regardless of nav state)
+    // - Cart visible + nav collapsed → 4 columns
+    // - Cart visible + nav expanded → 3 columns
+    int gridColumns;
+    if (!_isCartExpanded) {
+      gridColumns = 5;
+    } else if (isNavSidebarExpanded) {
+      gridColumns = 3;
+    } else {
+      gridColumns = 4;
+    }
+
     return Stack(
       children: [
         Row(
@@ -131,10 +168,10 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                 children: [
                   // Search and category filter in card
                   _buildSearchAndFilterCard(),
-                  // Product grid - more columns when cart is collapsed
+                  // Product grid - columns based on sidebar visibility
                   Expanded(
                     child: _buildProductGrid(
-                      crossAxisCount: _isCartExpanded ? 3 : 4,
+                      crossAxisCount: gridColumns,
                     ),
                   ),
                 ],
@@ -258,75 +295,96 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Widget _buildProductGrid({required int crossAxisCount}) {
-    final productsAsync = ref.watch(posSearchResultsProvider);
+    final paginatedState = ref.watch(posPaginationProvider);
     final cart = ref.watch(cartProvider);
 
-    return productsAsync.when(
-      loading: () => const Center(child: ModernLoading()),
-      error: (error, _) => ModernErrorState(
-        message: error.toString(),
-        onRetry: () => ref.invalidate(posSearchResultsProvider),
+    // Handle initial loading state
+    if (paginatedState.isLoading && paginatedState.products.isEmpty) {
+      return const Center(child: ModernLoading());
+    }
+
+    // Handle error state
+    if (paginatedState.error != null && paginatedState.products.isEmpty) {
+      return ModernErrorState(
+        message: paginatedState.error!,
+        onRetry: () => ref.read(posPaginationProvider.notifier).loadInitial(),
+      );
+    }
+
+    // Handle empty state
+    if (!paginatedState.isLoading && paginatedState.products.isEmpty) {
+      return const ModernEmptyState(
+        icon: Icons.inventory_2_outlined,
+        title: 'Produk Tidak Ditemukan',
+        message: 'Coba ubah kata kunci atau filter kategori',
+      );
+    }
+
+    final products = paginatedState.products;
+    // Add 1 extra item for loading indicator when loading more
+    final itemCount =
+        products.length + (paginatedState.isLoadingMore ? 1 : 0);
+
+    return GridView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.only(
+        left: AppDimensions.spacing16,
+        right: AppDimensions.spacing16,
+        top: AppDimensions.spacing16,
+        // Extra bottom padding for mobile to account for cart bar + bottom nav
+        bottom: context.isMobile
+            ? AppDimensions.spacing16 + 160 // cart bar (~64) + bottom nav (~80) + spacing
+            : AppDimensions.spacing16,
       ),
-      data: (products) {
-        if (products.isEmpty) {
-          return const ModernEmptyState(
-            icon: Icons.inventory_2_outlined,
-            title: 'Produk Tidak Ditemukan',
-            message: 'Coba ubah kata kunci atau filter kategori',
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: AppDimensions.spacing12,
+        mainAxisSpacing: AppDimensions.spacing12,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        // Show loading indicator for the last item when loading more
+        if (index >= products.length) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppDimensions.spacing16),
+              child: ModernLoading.small(),
+            ),
           );
         }
 
-        return GridView.builder(
-          padding: EdgeInsets.only(
-            left: AppDimensions.spacing16,
-            right: AppDimensions.spacing16,
-            top: AppDimensions.spacing16,
-            // Extra bottom padding for mobile to account for cart bar + bottom nav
-            bottom: context.isMobile
-                ? AppDimensions.spacing16 + 160 // cart bar (~64) + bottom nav (~80) + spacing
-                : AppDimensions.spacing16,
-          ),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: AppDimensions.spacing12,
-            mainAxisSpacing: AppDimensions.spacing12,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            // Find quantity in cart
-            final cartItem = cart.where((c) => c.product.id == product.id);
-            final quantityInCart =
-                cartItem.isNotEmpty ? cartItem.first.quantity : 0;
+        final product = products[index];
+        // Find quantity in cart
+        final cartItem = cart.where((c) => c.product.id == product.id);
+        final quantityInCart =
+            cartItem.isNotEmpty ? cartItem.first.quantity : 0;
 
-            return ProductGridItem(
-              product: product,
-              quantityInCart: quantityInCart,
-              onTap: () {
-                final result =
-                    ref.read(cartProvider.notifier).addProduct(product);
+        return ProductGridItem(
+          product: product,
+          quantityInCart: quantityInCart,
+          onTap: () {
+            final result =
+                ref.read(cartProvider.notifier).addProduct(product);
 
-                // Show appropriate feedback based on result
-                if (result.isSuccess) {
-                  ModernToast.success(
-                    context,
-                    '${product.name} ditambahkan ke keranjang',
-                    duration: const Duration(seconds: 1),
-                  );
-                } else if (result.result == CartOperationResult.outOfStock) {
-                  ModernToast.error(
-                    context,
-                    '${product.name} habis',
-                  );
-                } else if (result.result == CartOperationResult.exceedsStock) {
-                  ModernToast.warning(
-                    context,
-                    'Stok tidak mencukupi. Tersisa ${result.availableStock} ${result.unit}',
-                  );
-                }
-              },
-            );
+            // Show appropriate feedback based on result
+            if (result.isSuccess) {
+              ModernToast.success(
+                context,
+                '${product.name} ditambahkan ke keranjang',
+                duration: const Duration(seconds: 1),
+              );
+            } else if (result.result == CartOperationResult.outOfStock) {
+              ModernToast.error(
+                context,
+                '${product.name} habis',
+              );
+            } else if (result.result == CartOperationResult.exceedsStock) {
+              ModernToast.warning(
+                context,
+                'Stok tidak mencukupi. Tersisa ${result.availableStock} ${result.unit}',
+              );
+            }
           },
         );
       },
