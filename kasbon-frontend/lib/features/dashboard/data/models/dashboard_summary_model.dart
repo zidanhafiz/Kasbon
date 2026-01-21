@@ -7,6 +7,7 @@ class DashboardSummaryModel extends DashboardSummary {
     required super.todayProfit,
     required super.transactionCount,
     required super.yesterdaySales,
+    required super.yesterdayProfit,
     required super.lowStockCount,
   });
 
@@ -16,6 +17,7 @@ class DashboardSummaryModel extends DashboardSummary {
     required double todayProfit,
     required int transactionCount,
     required double yesterdaySales,
+    required double yesterdayProfit,
     required int lowStockCount,
   }) {
     return DashboardSummaryModel(
@@ -23,6 +25,7 @@ class DashboardSummaryModel extends DashboardSummary {
       todayProfit: todayProfit,
       transactionCount: transactionCount,
       yesterdaySales: yesterdaySales,
+      yesterdayProfit: yesterdayProfit,
       lowStockCount: lowStockCount,
     );
   }
@@ -34,6 +37,7 @@ class DashboardSummaryModel extends DashboardSummary {
       todayProfit: todayProfit,
       transactionCount: transactionCount,
       yesterdaySales: yesterdaySales,
+      yesterdayProfit: yesterdayProfit,
       lowStockCount: lowStockCount,
     );
   }

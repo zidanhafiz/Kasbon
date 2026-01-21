@@ -11,6 +11,7 @@ import '../../features/products/presentation/screens/product_detail_screen.dart'
 import '../../features/products/presentation/screens/product_form_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
 import '../../features/receipt/presentation/screens/receipt_screen.dart';
+import '../../features/reports/presentation/screens/profit_report_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../../shared/modern/modern.dart';
@@ -159,7 +160,7 @@ class AppRouter {
             name: 'reports',
             pageBuilder: (context, state) => _buildPage(
               state: state,
-              child: const _PlaceholderScreen(title: 'Laporan'),
+              child: const ProfitReportScreen(),
             ),
           ),
 

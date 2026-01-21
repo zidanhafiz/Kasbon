@@ -96,12 +96,14 @@ class SalesSummaryCard extends StatelessWidget {
                         ? '${summary.profitMargin.toStringAsFixed(0)}%'
                         : null,
                     iconColor: AppColors.success,
+                    comparisonPercentage: summary.profitComparisonPercentage,
+                    isIncrease: summary.isProfitIncrease,
                   ),
                 ),
 
                 // Divider
                 Container(
-                  height: 40,
+                  height: 60,
                   width: 1,
                   color: AppColors.border,
                 ),
@@ -131,6 +133,8 @@ class _StatItem extends StatelessWidget {
   final String value;
   final String? subValue;
   final Color iconColor;
+  final double? comparisonPercentage;
+  final bool? isIncrease;
 
   const _StatItem({
     required this.icon,
@@ -138,6 +142,8 @@ class _StatItem extends StatelessWidget {
     required this.value,
     this.subValue,
     required this.iconColor,
+    this.comparisonPercentage,
+    this.isIncrease,
   });
 
   @override
@@ -182,6 +188,37 @@ class _StatItem extends StatelessWidget {
               ),
             ],
           ],
+        ),
+        // Profit comparison badge
+        if (comparisonPercentage != null && isIncrease != null) ...[
+          const SizedBox(height: AppDimensions.spacing4),
+          _buildComparisonBadge(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildComparisonBadge() {
+    final color = isIncrease! ? AppColors.success : AppColors.error;
+    final iconData = isIncrease! ? Icons.arrow_upward : Icons.arrow_downward;
+    final prefix = isIncrease! ? '+' : '';
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          iconData,
+          size: 10,
+          color: color,
+        ),
+        const SizedBox(width: 2),
+        Text(
+          '$prefix${comparisonPercentage!.toStringAsFixed(0)}%',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: 10,
+          ),
         ),
       ],
     );

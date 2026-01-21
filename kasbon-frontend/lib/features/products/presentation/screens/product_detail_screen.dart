@@ -8,6 +8,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
+import '../../../reports/presentation/providers/profit_report_provider.dart';
 import '../../domain/entities/product.dart';
 import '../providers/products_provider.dart';
 import '../widgets/stock_indicator.dart';
@@ -117,6 +118,8 @@ class ProductDetailScreen extends ConsumerWidget {
           _buildPricingCard(product),
           const SizedBox(height: AppDimensions.spacing16),
           _buildStockCard(product),
+          const SizedBox(height: AppDimensions.spacing16),
+          _buildProfitHistoryCard(ref, product),
         ],
       ),
     );
@@ -146,7 +149,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacing24),
-              // Right column: Pricing and Stock
+              // Right column: Pricing, Stock, and Profit History
               Expanded(
                 flex: 3,
                 child: Column(
@@ -154,6 +157,8 @@ class ProductDetailScreen extends ConsumerWidget {
                     _buildPricingCard(product),
                     const SizedBox(height: AppDimensions.spacing16),
                     _buildStockCard(product),
+                    const SizedBox(height: AppDimensions.spacing16),
+                    _buildProfitHistoryCard(ref, product),
                   ],
                 ),
               ),
@@ -367,6 +372,68 @@ class ProductDetailScreen extends ConsumerWidget {
             onPressed: () => _showDeleteConfirmation(context, ref, product),
             leadingIcon: Icons.delete_outline,
             child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfitHistoryCard(WidgetRef ref, Product product) {
+    final profitabilityAsync =
+        ref.watch(productProfitabilityProvider(product.id));
+
+    return ModernCard.outlined(
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.analytics_outlined,
+                size: 20,
+                color: AppColors.success,
+              ),
+              const SizedBox(width: AppDimensions.spacing8),
+              Text(
+                'Riwayat Penjualan',
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacing12),
+          profitabilityAsync.when(
+            data: (profitability) => Column(
+              children: [
+                _buildInfoRow(
+                  'Total Terjual',
+                  '${profitability.totalSold} ${product.unit}',
+                ),
+                _buildInfoRow(
+                  'Total Laba',
+                  CurrencyFormatter.format(profitability.totalProfit),
+                ),
+                if (profitability.totalSold > 0)
+                  _buildInfoRow(
+                    'Margin Rata-rata',
+                    '${profitability.averageMargin.toStringAsFixed(1)}%',
+                  ),
+              ],
+            ),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(AppDimensions.spacing16),
+                child: ModernLoading.small(),
+              ),
+            ),
+            error: (error, _) => Text(
+              'Gagal memuat data',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.error,
+              ),
+            ),
           ),
         ],
       ),

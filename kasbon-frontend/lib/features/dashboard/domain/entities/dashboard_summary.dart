@@ -14,6 +14,9 @@ class DashboardSummary extends Equatable {
   /// Yesterday's total sales for comparison
   final double yesterdaySales;
 
+  /// Yesterday's total profit for comparison
+  final double yesterdayProfit;
+
   /// Number of products with low stock (stock <= min_stock)
   final int lowStockCount;
 
@@ -22,10 +25,11 @@ class DashboardSummary extends Equatable {
     required this.todayProfit,
     required this.transactionCount,
     required this.yesterdaySales,
+    required this.yesterdayProfit,
     required this.lowStockCount,
   });
 
-  /// Calculate the percentage change from yesterday
+  /// Calculate the percentage change in sales from yesterday
   /// Returns null if yesterday had zero sales (to avoid division by zero)
   double? get comparisonPercentage {
     if (yesterdaySales == 0) {
@@ -34,8 +38,20 @@ class DashboardSummary extends Equatable {
     return ((todaySales - yesterdaySales) / yesterdaySales) * 100;
   }
 
+  /// Calculate the percentage change in profit from yesterday
+  /// Returns null if yesterday had zero profit (to avoid division by zero)
+  double? get profitComparisonPercentage {
+    if (yesterdayProfit == 0) {
+      return todayProfit > 0 ? 100.0 : null;
+    }
+    return ((todayProfit - yesterdayProfit) / yesterdayProfit) * 100;
+  }
+
   /// Check if sales increased compared to yesterday
   bool get isIncrease => todaySales >= yesterdaySales;
+
+  /// Check if profit increased compared to yesterday
+  bool get isProfitIncrease => todayProfit >= yesterdayProfit;
 
   /// Check if there are any low stock products
   bool get hasLowStock => lowStockCount > 0;
@@ -52,6 +68,7 @@ class DashboardSummary extends Equatable {
     todayProfit: 0,
     transactionCount: 0,
     yesterdaySales: 0,
+    yesterdayProfit: 0,
     lowStockCount: 0,
   );
 
@@ -61,6 +78,7 @@ class DashboardSummary extends Equatable {
         todayProfit,
         transactionCount,
         yesterdaySales,
+        yesterdayProfit,
         lowStockCount,
       ];
 }

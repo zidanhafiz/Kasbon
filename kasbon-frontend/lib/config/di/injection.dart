@@ -23,6 +23,12 @@ import '../../features/receipt/data/datasources/shop_settings_local_datasource.d
 import '../../features/receipt/data/repositories/shop_settings_repository_impl.dart';
 import '../../features/receipt/domain/repositories/shop_settings_repository.dart';
 import '../../features/receipt/domain/usecases/get_shop_settings.dart';
+import '../../features/reports/data/datasources/profit_local_datasource.dart';
+import '../../features/reports/data/repositories/profit_report_repository_impl.dart';
+import '../../features/reports/domain/repositories/profit_report_repository.dart';
+import '../../features/reports/domain/usecases/get_product_profitability.dart';
+import '../../features/reports/domain/usecases/get_profit_summary.dart';
+import '../../features/reports/domain/usecases/get_top_profitable_products.dart';
 import '../../features/transactions/data/datasources/transaction_local_datasource.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
@@ -158,6 +164,31 @@ Future<void> configureDependencies() async {
   // Use Cases
   getIt.registerLazySingleton(
     () => GetShopSettings(getIt<ShopSettingsRepository>()),
+  );
+
+  // ===========================================
+  // REPORTS / PROFIT FEATURE
+  // ===========================================
+
+  // Data Sources
+  getIt.registerLazySingleton<ProfitLocalDataSource>(
+    () => ProfitLocalDataSourceImpl(getIt<DatabaseHelper>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<ProfitReportRepository>(
+    () => ProfitReportRepositoryImpl(getIt<ProfitLocalDataSource>()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(
+    () => GetProfitSummary(getIt<ProfitReportRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetTopProfitableProducts(getIt<ProfitReportRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetProductProfitability(getIt<ProfitReportRepository>()),
   );
 
   logger.i('Dependencies configured successfully');

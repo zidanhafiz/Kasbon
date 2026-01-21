@@ -20,6 +20,9 @@ abstract class DashboardLocalDataSource {
   /// Get yesterday's total sales
   Future<double> getYesterdaySales();
 
+  /// Get yesterday's total profit
+  Future<double> getYesterdayProfit();
+
   /// Get count of low stock products
   Future<int> getLowStockProductCount();
 }
@@ -39,6 +42,7 @@ class DashboardLocalDataSourceImpl implements DashboardLocalDataSource {
         getTodayProfit(),
         _getTodayTransactionCountInternal(),
         getYesterdaySales(),
+        getYesterdayProfit(),
         _getLowStockProductCountInternal(),
       ]);
 
@@ -47,7 +51,8 @@ class DashboardLocalDataSourceImpl implements DashboardLocalDataSource {
         todayProfit: results[1] as double,
         transactionCount: results[2] as int,
         yesterdaySales: results[3] as double,
-        lowStockCount: results[4] as int,
+        yesterdayProfit: results[4] as double,
+        lowStockCount: results[5] as int,
       );
     } catch (e) {
       if (e is DatabaseException) rethrow;
@@ -137,6 +142,29 @@ class DashboardLocalDataSourceImpl implements DashboardLocalDataSource {
     } catch (e) {
       throw DatabaseException(
         message: 'Gagal mengambil penjualan kemarin',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
+  Future<double> getYesterdayProfit() async {
+    try {
+      final result = await _databaseHelper.rawQuery('''
+        SELECT COALESCE(SUM(
+          (ti.${DatabaseConstants.colSellingPrice} - ti.${DatabaseConstants.colCostPrice}) * ti.${DatabaseConstants.colQuantity}
+        ), 0) as profit
+        FROM ${DatabaseConstants.tableTransactionItems} ti
+        INNER JOIN ${DatabaseConstants.tableTransactions} t
+          ON ti.${DatabaseConstants.colTransactionId} = t.${DatabaseConstants.colId}
+        WHERE date(t.${DatabaseConstants.colTransactionDate} / 1000, 'unixepoch', 'localtime') = date('now', '-1 day', 'localtime')
+          AND t.${DatabaseConstants.colPaymentStatus} != 'cancelled'
+      ''');
+
+      return (result.first['profit'] as num?)?.toDouble() ?? 0.0;
+    } catch (e) {
+      throw DatabaseException(
+        message: 'Gagal mengambil laba kemarin',
         originalError: e,
       );
     }
