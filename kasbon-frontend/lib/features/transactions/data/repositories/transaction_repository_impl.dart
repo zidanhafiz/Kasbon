@@ -95,4 +95,46 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return const Left(UnexpectedFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, List<Transaction>>> getTransactionsByPaymentStatus(
+    String status,
+  ) async {
+    try {
+      final models =
+          await _localDataSource.getTransactionsByPaymentStatus(status);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on DatabaseException catch (e) {
+      return Left(DatabaseFailure(message: e.message));
+    } catch (e) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Transaction>> updateTransaction(
+    String id, {
+    String? paymentStatus,
+    DateTime? debtPaidAt,
+  }) async {
+    try {
+      final model = await _localDataSource.updateTransaction(
+        id,
+        paymentStatus: paymentStatus,
+        debtPaidAt: debtPaidAt?.millisecondsSinceEpoch,
+      );
+
+      // Get items to return complete transaction
+      final itemModels = await _localDataSource.getTransactionItems(id);
+      final items = itemModels.map((m) => m.toEntity()).toList();
+
+      return Right(model.toEntity(items: items));
+    } on NotFoundException catch (e) {
+      return Left(NotFoundFailure(message: e.message));
+    } on DatabaseException catch (e) {
+      return Left(DatabaseFailure(message: e.message));
+    } catch (e) {
+      return const Left(UnexpectedFailure());
+    }
+  }
 }

@@ -26,4 +26,16 @@ abstract class TransactionRepository {
 
   /// Get today's transaction count (for generating transaction number)
   Future<Either<Failure, int>> getTodayTransactionCount();
+
+  /// Get transactions by payment status (e.g., 'debt' for unpaid debts)
+  Future<Either<Failure, List<Transaction>>> getTransactionsByPaymentStatus(
+    String status,
+  );
+
+  /// Update a transaction (e.g., mark debt as paid)
+  Future<Either<Failure, Transaction>> updateTransaction(
+    String id, {
+    String? paymentStatus,
+    DateTime? debtPaidAt,
+  });
 }

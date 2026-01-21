@@ -219,6 +219,13 @@ class DefaultMenuCategories {
       iconColor: Color(0xFFF59E0B),
     ),
     MenuCategory(
+      label: 'Hutang',
+      icon: Icons.credit_card_off,
+      routePath: '/debts',
+      backgroundColor: Color(0xFFFEE2E2),
+      iconColor: Color(0xFFEF4444),
+    ),
+    MenuCategory(
       label: 'Laporan',
       icon: Icons.bar_chart,
       routePath: '/reports',

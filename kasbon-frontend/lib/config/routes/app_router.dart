@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/debt/presentation/screens/debt_list_screen.dart';
 import '../../features/dev_tools/presentation/screens/design_system_showcase_screen.dart';
 import '../../features/dev_tools/presentation/screens/dev_seed_screen.dart';
 import '../../features/dev_tools/presentation/screens/dev_tools_screen.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String transactions = '/transactions';
   static const String transactionDetail = '/transactions/:id';
   static const String reports = '/reports';
+  static const String debts = '/debts';
   static const String settings = '/settings';
   static const String dev = '/dev';
   static const String designSystem = '/dev/design-system';
@@ -161,6 +163,16 @@ class AppRouter {
             pageBuilder: (context, state) => _buildPage(
               state: state,
               child: const ProfitReportScreen(),
+            ),
+          ),
+
+          // Debts (Hutang)
+          GoRoute(
+            path: AppRoutes.debts,
+            name: 'debts',
+            pageBuilder: (context, state) => _buildPage(
+              state: state,
+              child: const DebtListScreen(),
             ),
           ),
 

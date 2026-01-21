@@ -9,11 +9,12 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../shared/modern/modern.dart';
 import '../providers/cart_provider.dart';
 import '../providers/payment_provider.dart';
+import 'debt_payment_dialog.dart';
 
-/// Payment dialog for processing cash payments
+/// Payment dialog for processing payments
 ///
-/// Shows total amount, cash received input, quick buttons,
-/// and calculates change automatically.
+/// Shows payment method selection (Tunai/Hutang),
+/// then cash input for tunai or customer name for hutang.
 class PaymentDialog extends ConsumerStatefulWidget {
   const PaymentDialog({super.key});
 
@@ -34,6 +35,7 @@ class PaymentDialog extends ConsumerStatefulWidget {
 class _PaymentDialogState extends ConsumerState<PaymentDialog> {
   final _cashController = TextEditingController();
   double _cashReceived = 0;
+  SelectedPaymentMethod _selectedMethod = SelectedPaymentMethod.cash;
 
   @override
   void dispose() {
@@ -48,7 +50,19 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
     });
   }
 
-  Future<void> _processPayment() async {
+  void _selectPaymentMethod(SelectedPaymentMethod method) {
+    if (method == SelectedPaymentMethod.debt) {
+      // Close this dialog and open debt dialog
+      Navigator.pop(context, false);
+      DebtPaymentDialog.show(context);
+    } else {
+      setState(() {
+        _selectedMethod = method;
+      });
+    }
+  }
+
+  Future<void> _processCashPayment() async {
     final total = ref.read(cartTotalProvider);
 
     if (_cashReceived < total) {
@@ -56,8 +70,8 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
       return;
     }
 
-    // Process payment
-    await ref.read(paymentProvider.notifier).processPayment(
+    // Process cash payment
+    await ref.read(paymentProvider.notifier).processCashPayment(
           cashReceived: _cashReceived,
         );
 
@@ -131,7 +145,39 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
             ),
             const SizedBox(height: AppDimensions.spacing24),
 
-            // Cash received input
+            // Payment method selection
+            Text(
+              'Metode Pembayaran',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacing12),
+            Row(
+              children: [
+                Expanded(
+                  child: _PaymentMethodButton(
+                    icon: Icons.payments_outlined,
+                    label: 'Tunai',
+                    isSelected: _selectedMethod == SelectedPaymentMethod.cash,
+                    onTap: () => _selectPaymentMethod(SelectedPaymentMethod.cash),
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacing12),
+                Expanded(
+                  child: _PaymentMethodButton(
+                    icon: Icons.credit_card_off_outlined,
+                    label: 'Hutang',
+                    isSelected: _selectedMethod == SelectedPaymentMethod.debt,
+                    onTap: () => _selectPaymentMethod(SelectedPaymentMethod.debt),
+                    color: AppColors.warning,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacing24),
+
+            // Cash received input (only for cash payment)
             ModernTextField(
               controller: _cashController,
               label: 'Uang Diterima',
@@ -224,12 +270,69 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> {
                 const SizedBox(width: AppDimensions.spacing12),
                 Expanded(
                   child: ModernButton.primary(
-                    onPressed: canPay ? _processPayment : null,
+                    onPressed: canPay ? _processCashPayment : null,
                     isLoading: paymentState.isProcessing,
                     child: const Text('Bayar'),
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Payment method selection button
+class _PaymentMethodButton extends StatelessWidget {
+  const _PaymentMethodButton({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveColor = color ?? AppColors.primary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.spacing16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? effectiveColor.withValues(alpha: 0.1)
+              : AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          border: Border.all(
+            color: isSelected ? effectiveColor : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: AppDimensions.iconXLarge,
+              color: isSelected ? effectiveColor : AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppDimensions.spacing8),
+            Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? effectiveColor : AppColors.textSecondary,
+              ),
             ),
           ],
         ),

@@ -33,6 +33,16 @@ abstract class TransactionLocalDataSource {
 
   /// Get transaction by transaction number
   Future<TransactionModel?> getTransactionByNumber(String transactionNumber);
+
+  /// Get transactions by payment status (e.g., 'debt' for unpaid debts)
+  Future<List<TransactionModel>> getTransactionsByPaymentStatus(String status);
+
+  /// Update a transaction
+  Future<TransactionModel> updateTransaction(
+    String id, {
+    String? paymentStatus,
+    int? debtPaidAt,
+  });
 }
 
 /// Implementation of TransactionLocalDataSource using SQLite
@@ -221,6 +231,84 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     } catch (e) {
       throw DatabaseException(
         message: 'Gagal mengambil transaksi',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
+  Future<List<TransactionModel>> getTransactionsByPaymentStatus(
+      String status) async {
+    try {
+      // For 'debt' status, get transactions that are unpaid (debt_paid_at is null)
+      String where;
+      List<Object?> whereArgs;
+
+      if (status == DatabaseConstants.paymentStatusDebt) {
+        // Get debts that haven't been paid yet
+        where =
+            '${DatabaseConstants.colPaymentStatus} = ? AND ${DatabaseConstants.colDebtPaidAt} IS NULL';
+        whereArgs = [status];
+      } else {
+        where = '${DatabaseConstants.colPaymentStatus} = ?';
+        whereArgs = [status];
+      }
+
+      final results = await _databaseHelper.query(
+        DatabaseConstants.tableTransactions,
+        where: where,
+        whereArgs: whereArgs,
+        orderBy: '${DatabaseConstants.colTransactionDate} DESC',
+      );
+
+      return results.map((map) => TransactionModel.fromMap(map)).toList();
+    } catch (e) {
+      throw DatabaseException(
+        message: 'Gagal mengambil transaksi berdasarkan status',
+        originalError: e,
+      );
+    }
+  }
+
+  @override
+  Future<TransactionModel> updateTransaction(
+    String id, {
+    String? paymentStatus,
+    int? debtPaidAt,
+  }) async {
+    try {
+      // Build update map
+      final updateMap = <String, dynamic>{
+        DatabaseConstants.colUpdatedAt: DateTime.now().millisecondsSinceEpoch,
+      };
+
+      if (paymentStatus != null) {
+        updateMap[DatabaseConstants.colPaymentStatus] = paymentStatus;
+      }
+
+      if (debtPaidAt != null) {
+        updateMap[DatabaseConstants.colDebtPaidAt] = debtPaidAt;
+      }
+
+      // Perform update
+      final rowsAffected = await _databaseHelper.update(
+        DatabaseConstants.tableTransactions,
+        updateMap,
+        where: '${DatabaseConstants.colId} = ?',
+        whereArgs: [id],
+      );
+
+      if (rowsAffected == 0) {
+        throw const NotFoundException(message: 'Transaksi tidak ditemukan');
+      }
+
+      // Return updated transaction
+      return await getTransactionById(id);
+    } on NotFoundException {
+      rethrow;
+    } catch (e) {
+      throw DatabaseException(
+        message: 'Gagal memperbarui transaksi',
         originalError: e,
       );
     }

@@ -42,7 +42,16 @@ class CreateTransaction implements UseCase<Transaction, CreateTransactionParams>
           (sum, item) => sum + item.subtotal,
         );
         final total = subtotal; // MVP: no discount/tax
-        final cashChange = params.cashReceived - total;
+
+        // Determine payment method and status
+        final paymentMethod = params.paymentMethod;
+        final paymentStatus = params.paymentStatus;
+        final isDebt = paymentMethod == PaymentMethod.debt;
+
+        // For debt transactions, cash fields are null; otherwise calculate change
+        final double? cashReceived = isDebt ? null : params.cashReceived;
+        final double? cashChange =
+            isDebt ? null : (params.cashReceived ?? 0) - total;
 
         // 4. Create Transaction entity
         final now = DateTime.now();
@@ -57,9 +66,9 @@ class CreateTransaction implements UseCase<Transaction, CreateTransactionParams>
           discountPercentage: 0,
           taxAmount: 0,
           total: total,
-          paymentMethod: PaymentMethod.cash,
-          paymentStatus: PaymentStatus.paid,
-          cashReceived: params.cashReceived,
+          paymentMethod: paymentMethod,
+          paymentStatus: paymentStatus,
+          cashReceived: cashReceived,
           cashChange: cashChange,
           notes: params.notes,
           cashierName: params.cashierName,
@@ -114,10 +123,10 @@ class CreateTransactionParams extends Equatable {
   /// List of items in the cart
   final List<CartItem> cartItems;
 
-  /// Amount of cash received from customer
-  final double cashReceived;
+  /// Amount of cash received from customer (required for cash payments, null for debt)
+  final double? cashReceived;
 
-  /// Optional customer name
+  /// Optional customer name (required for debt transactions)
   final String? customerName;
 
   /// Optional notes for the transaction
@@ -126,13 +135,58 @@ class CreateTransactionParams extends Equatable {
   /// Optional cashier name (can be from settings)
   final String? cashierName;
 
+  /// Payment method (default: cash)
+  final PaymentMethod paymentMethod;
+
+  /// Payment status (default: paid)
+  final PaymentStatus paymentStatus;
+
   const CreateTransactionParams({
     required this.cartItems,
-    required this.cashReceived,
+    this.cashReceived,
     this.customerName,
     this.notes,
     this.cashierName,
+    this.paymentMethod = PaymentMethod.cash,
+    this.paymentStatus = PaymentStatus.paid,
   });
+
+  /// Factory for cash payment
+  factory CreateTransactionParams.cash({
+    required List<CartItem> cartItems,
+    required double cashReceived,
+    String? customerName,
+    String? notes,
+    String? cashierName,
+  }) {
+    return CreateTransactionParams(
+      cartItems: cartItems,
+      cashReceived: cashReceived,
+      customerName: customerName,
+      notes: notes,
+      cashierName: cashierName,
+      paymentMethod: PaymentMethod.cash,
+      paymentStatus: PaymentStatus.paid,
+    );
+  }
+
+  /// Factory for debt payment
+  factory CreateTransactionParams.debt({
+    required List<CartItem> cartItems,
+    required String customerName,
+    String? notes,
+    String? cashierName,
+  }) {
+    return CreateTransactionParams(
+      cartItems: cartItems,
+      cashReceived: null,
+      customerName: customerName,
+      notes: notes,
+      cashierName: cashierName,
+      paymentMethod: PaymentMethod.debt,
+      paymentStatus: PaymentStatus.debt,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -141,5 +195,7 @@ class CreateTransactionParams extends Equatable {
         customerName,
         notes,
         cashierName,
+        paymentMethod,
+        paymentStatus,
       ];
 }

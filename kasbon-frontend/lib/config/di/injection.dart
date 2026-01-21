@@ -26,6 +26,8 @@ import '../../features/receipt/domain/usecases/get_shop_settings.dart';
 import '../../features/reports/data/datasources/profit_local_datasource.dart';
 import '../../features/reports/data/repositories/profit_report_repository_impl.dart';
 import '../../features/reports/domain/repositories/profit_report_repository.dart';
+import '../../features/debt/domain/usecases/get_unpaid_debts.dart';
+import '../../features/debt/domain/usecases/mark_debt_paid.dart';
 import '../../features/reports/domain/usecases/get_product_profitability.dart';
 import '../../features/reports/domain/usecases/get_profit_summary.dart';
 import '../../features/reports/domain/usecases/get_top_profitable_products.dart';
@@ -127,6 +129,16 @@ Future<void> configureDependencies() async {
       () => GetTransactionById(getIt<TransactionRepository>()));
   getIt.registerLazySingleton(
       () => GetTransactions(getIt<TransactionRepository>()));
+
+  // ===========================================
+  // DEBT FEATURE
+  // ===========================================
+
+  // Use Cases (reuses TransactionRepository)
+  getIt.registerLazySingleton(
+      () => GetUnpaidDebts(getIt<TransactionRepository>()));
+  getIt.registerLazySingleton(
+      () => MarkDebtPaid(getIt<TransactionRepository>()));
 
   // ===========================================
   // DASHBOARD FEATURE

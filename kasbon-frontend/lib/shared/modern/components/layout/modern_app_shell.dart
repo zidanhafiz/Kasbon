@@ -84,6 +84,12 @@ const List<ModernNavItem> defaultTabletNavItems = [
     routePath: '/transactions',
   ),
   ModernNavItem(
+    icon: Icons.credit_card_off_outlined,
+    activeIcon: Icons.credit_card_off,
+    label: 'Hutang',
+    routePath: '/debts',
+  ),
+  ModernNavItem(
     icon: Icons.bar_chart_outlined,
     activeIcon: Icons.bar_chart,
     label: 'Laporan',
