@@ -3,7 +3,7 @@
 **Priority:** P1 (Core)
 **Complexity:** MEDIUM
 **Phase:** MVP
-**Status:** Not Started
+**Status:** ✅ Completed (Jan 21, 2025)
 
 ---
 
@@ -24,7 +24,7 @@ Enable businesses to track customer debts (hutang) by marking transactions as un
 
 ### 1. Database Updates
 
-- [ ] Verify columns exist in transactions table:
+- [x] Verify columns exist in transactions table:
   - payment_status (TEXT: 'paid' | 'debt')
   - customer_name (TEXT, nullable)
   - notes (TEXT, nullable)
@@ -32,24 +32,24 @@ Enable businesses to track customer debts (hutang) by marking transactions as un
 
 ### 2. POS Payment Flow Update
 
-- [ ] Update payment dialog to include "Hutang" option
-- [ ] When "Hutang" selected:
+- [x] Update payment dialog to include "Hutang" option
+- [x] When "Hutang" selected:
   - Require customer name
   - Optional notes field (e.g., "Bayar akhir bulan")
   - Set payment_status = 'debt'
   - No cash_received needed
 
-- [ ] Create `lib/features/pos/presentation/widgets/debt_payment_dialog.dart`
+- [x] Create `lib/features/pos/presentation/widgets/debt_payment_dialog.dart`
 
 ### 3. Debt List Screen
 
-- [ ] Create `lib/features/debt/presentation/screens/debt_list_screen.dart`
+- [x] Create `lib/features/debt/presentation/screens/debt_list_screen.dart`
   - List all unpaid transactions (payment_status = 'debt')
   - Group by customer name
   - Show total debt per customer
   - Show transaction details
 
-- [ ] Create `lib/features/debt/presentation/widgets/debt_card.dart`
+- [x] Create `lib/features/debt/presentation/widgets/debt_card.dart`
   - Customer name
   - Transaction number and date
   - Amount owed
@@ -58,33 +58,33 @@ Enable businesses to track customer debts (hutang) by marking transactions as un
 
 ### 4. Debt Summary
 
-- [ ] Create `lib/features/debt/presentation/widgets/debt_summary_card.dart`
+- [x] Create `lib/features/debt/presentation/widgets/debt_summary_card.dart`
   - Total outstanding debt
   - Number of debtors
   - Oldest debt
 
-- [ ] Create `lib/features/debt/presentation/providers/debt_provider.dart`
+- [x] Create `lib/features/debt/presentation/providers/debt_provider.dart`
   - unpaidDebtsProvider
   - totalDebtProvider
   - debtByCustomerProvider
 
 ### 5. Mark Debt as Paid
 
-- [ ] Create `lib/features/debt/domain/usecases/mark_debt_paid.dart`
+- [x] Create `lib/features/debt/domain/usecases/mark_debt_paid.dart`
   - Updates payment_status to 'paid'
   - Sets debt_paid_at timestamp
 
-- [ ] Confirmation dialog before marking paid
-- [ ] Success feedback
+- [x] Confirmation dialog before marking paid
+- [x] Success feedback
 
 ### 6. Navigation & Integration
 
-- [ ] Add debt routes to GoRouter
+- [x] Add debt routes to GoRouter
   - /debts (list)
   - /debts/:transactionId (detail)
 
-- [ ] Add "Hutang" menu item to bottom nav "Lainnya"
-- [ ] Show debt count badge if unpaid debts exist
+- [x] Add "Hutang" menu item to bottom nav "Lainnya"
+- [x] Show debt count badge if unpaid debts exist
 
 ---
 
@@ -263,17 +263,17 @@ class MarkDebtPaid {
 
 ## Acceptance Criteria
 
-- [ ] Can select "Hutang" as payment method in POS
-- [ ] Customer name required for debt transactions
-- [ ] Notes field available (optional)
-- [ ] Debt transactions saved with payment_status = 'debt'
-- [ ] Can view list of all unpaid debts
-- [ ] Debts grouped by customer name
-- [ ] Shows total debt per customer
-- [ ] Shows total outstanding debt
-- [ ] Can mark individual debt as paid
-- [ ] Paid debts no longer appear in debt list
-- [ ] Debt badge shown in navigation
+- [x] Can select "Hutang" as payment method in POS
+- [x] Customer name required for debt transactions
+- [x] Notes field available (optional)
+- [x] Debt transactions saved with payment_status = 'debt'
+- [x] Can view list of all unpaid debts
+- [x] Debts grouped by customer name
+- [x] Shows total debt per customer
+- [x] Shows total outstanding debt
+- [x] Can mark individual debt as paid
+- [x] Paid debts no longer appear in debt list
+- [x] Debt badge shown in navigation
 
 ---
 

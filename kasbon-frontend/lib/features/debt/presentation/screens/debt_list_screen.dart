@@ -23,7 +23,15 @@ class DebtListScreen extends ConsumerWidget {
     final debtsByCustomerAsync = ref.watch(debtsByCustomerProvider);
 
     return Scaffold(
-      appBar: const ModernAppBar(title: 'Hutang'),
+      appBar: ModernAppBar.withActions(
+        title: 'Hutang',
+        onNotificationTap: () {
+          // TODO: Navigate to notifications
+        },
+        onProfileTap: () {
+          // TODO: Navigate to profile
+        },
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(unpaidDebtsProvider);
@@ -55,8 +63,10 @@ class DebtListScreen extends ConsumerWidget {
 
                 // Debts grouped by customer
                 debtsByCustomerAsync.when(
-                  loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  loading: () =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  error: (_, __) =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
                   data: (debtsByCustomer) => SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -90,7 +100,8 @@ class DebtListScreen extends ConsumerWidget {
                 // Bottom spacing for mobile bottom nav
                 const SliverPadding(
                   padding: EdgeInsets.only(
-                    bottom: AppDimensions.bottomNavHeight + AppDimensions.spacing32,
+                    bottom:
+                        AppDimensions.bottomNavHeight + AppDimensions.spacing32,
                   ),
                 ),
               ],

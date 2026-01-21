@@ -11,15 +11,15 @@
 ```
 Setup Phase:       [##########] 100% (3/3)
 MVP P0 Features:   [##########] 100% (7/7)
-MVP P1 Features:   [          ] 0% (0/4)
+MVP P1 Features:   [###       ] 25% (1/4)
 Testing & Polish:  [          ] 0% (0/2)
 --------------------------------------------
-MVP TOTAL:         [######    ] 63% (10/16)
+MVP TOTAL:         [#######   ] 69% (11/16)
 
 Phase 2:           [          ] 0% (0/4)
 Deployment:        [          ] 0% (0/1)
 --------------------------------------------
-FULL PROJECT:      [#####     ] 48% (10/21)
+FULL PROJECT:      [#####     ] 52% (11/21)
 ```
 
 ---
@@ -38,6 +38,7 @@ FULL PROJECT:      [#####     ] 48% (10/21)
 | 008 | Receipt Generation | Jan 2, 2025 | Text-based receipt, copy/share/WhatsApp, receipt preview screen |
 | 009 | Stock Tracking | Jan 14, 2025 | Automatic stock deduction, low stock alerts, POS stock validation |
 | 010 | Profit Calculation | Jan 21, 2025 | Profit reports, dashboard comparison, top products, product detail profit history |
+| 011 | Debt Tracking | Jan 21, 2025 | Hutang payment option, debt list screen, mark as paid, debt summary, navigation integration |
 
 ---
 
@@ -53,9 +54,9 @@ FULL PROJECT:      [#####     ] 48% (10/21)
 
 | # | Task | Priority | Prerequisites |
 |---|------|----------|---------------|
-| 011 | Debt Tracking | P1 | 005 ✅ |
 | 012 | Basic Reports | P1 | 010 ✅ |
 | 013 | Settings | P1 | 003 ✅ |
+| 014 | Backup & Restore | P1 | 013 |
 
 ---
 
@@ -78,7 +79,7 @@ FULL PROJECT:      [#####     ] 48% (10/21)
 - [x] TASK_010: Profit Calculation
 
 ### Milestone 4: MVP Complete
-- [ ] TASK_011: Debt Tracking
+- [x] TASK_011: Debt Tracking
 - [ ] TASK_012: Basic Reports
 - [ ] TASK_013: Settings
 - [ ] TASK_014: Backup & Restore
@@ -146,4 +147,4 @@ FULL PROJECT:      [#####     ] 48% (10/21)
 
 ---
 
-*Last Updated: January 21, 2025 - TASK_010 Profit Calculation Completed*
+*Last Updated: January 21, 2025 - TASK_011 Debt Tracking Completed*
