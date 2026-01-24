@@ -12,7 +12,10 @@ import '../../features/products/presentation/screens/product_detail_screen.dart'
 import '../../features/products/presentation/screens/product_form_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
 import '../../features/receipt/presentation/screens/receipt_screen.dart';
+import '../../features/reports/presentation/screens/product_report_screen.dart';
 import '../../features/reports/presentation/screens/profit_report_screen.dart';
+import '../../features/reports/presentation/screens/reports_hub_screen.dart';
+import '../../features/reports/presentation/screens/sales_report_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../../shared/modern/modern.dart';
@@ -32,6 +35,9 @@ class AppRoutes {
   static const String transactions = '/transactions';
   static const String transactionDetail = '/transactions/:id';
   static const String reports = '/reports';
+  static const String reportsSales = '/reports/sales';
+  static const String reportsProducts = '/reports/products';
+  static const String reportsProfit = '/reports/profit';
   static const String debts = '/debts';
   static const String settings = '/settings';
   static const String dev = '/dev';
@@ -156,14 +162,43 @@ class AppRouter {
             ],
           ),
 
-          // Reports
+          // Reports with nested routes
           GoRoute(
             path: AppRoutes.reports,
             name: 'reports',
             pageBuilder: (context, state) => _buildPage(
               state: state,
-              child: const ProfitReportScreen(),
+              child: const ReportsHubScreen(),
             ),
+            routes: [
+              // Sales Report - /reports/sales
+              GoRoute(
+                path: 'sales',
+                name: 'reports-sales',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const SalesReportScreen(),
+                ),
+              ),
+              // Product Report - /reports/products
+              GoRoute(
+                path: 'products',
+                name: 'reports-products',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const ProductReportScreen(),
+                ),
+              ),
+              // Profit Report - /reports/profit
+              GoRoute(
+                path: 'profit',
+                name: 'reports-profit',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const ProfitReportScreen(),
+                ),
+              ),
+            ],
           ),
 
           // Debts (Hutang)

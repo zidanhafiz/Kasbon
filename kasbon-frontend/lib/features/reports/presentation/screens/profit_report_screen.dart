@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../shared/modern/modern.dart';
+import '../providers/date_range_provider.dart';
 import '../providers/profit_report_provider.dart';
+import '../widgets/date_range_selector.dart';
 import '../widgets/profit_summary_card.dart';
 import '../widgets/top_profitable_products_list.dart';
 
@@ -14,66 +16,91 @@ class ProfitReportScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final monthlyProfitAsync = ref.watch(monthlyProfitSummaryProvider);
+    final profitAsync = ref.watch(profitSummaryByDateRangeProvider);
     final topProductsAsync = ref.watch(topProfitableProductsProvider);
+    final dateRange = ref.watch(dateRangeProvider);
 
     return Scaffold(
-      appBar: ModernAppBar.withActions(
+      appBar: ModernAppBar.backWithActions(
         title: 'Laporan Laba',
         onNotificationTap: () {},
         onProfileTap: () {},
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(monthlyProfitSummaryProvider);
+          ref.invalidate(profitSummaryByDateRangeProvider);
           ref.invalidate(topProfitableProductsProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppDimensions.spacing16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Monthly Profit Summary Card
-              monthlyProfitAsync.when(
-                data: (summary) => ProfitSummaryCard(
-                  summary: summary,
-                  title: 'Total Laba Bulan Ini',
+              const SizedBox(height: AppDimensions.spacing16),
+
+              // Date Range Selector
+              const DateRangeSelector(),
+
+              const SizedBox(height: AppDimensions.spacing24),
+
+              // Profit Summary Card with dynamic title
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacing16,
                 ),
-                loading: () => const SizedBox(
-                  height: 180,
-                  child: Center(child: ModernLoading()),
-                ),
-                error: (error, _) => ModernErrorState(
-                  message: error.toString(),
-                  onRetry: () => ref.invalidate(monthlyProfitSummaryProvider),
+                child: profitAsync.when(
+                  data: (summary) => ProfitSummaryCard(
+                    summary: summary,
+                    title: 'Total Laba ${dateRange.label}',
+                  ),
+                  loading: () => const SizedBox(
+                    height: 180,
+                    child: Center(child: ModernLoading()),
+                  ),
+                  error: (error, _) => ModernErrorState(
+                    message: error.toString(),
+                    onRetry: () =>
+                        ref.invalidate(profitSummaryByDateRangeProvider),
+                  ),
                 ),
               ),
 
               const SizedBox(height: AppDimensions.spacing24),
 
-              // Section Header
-              const ModernSectionHeader(
-                title: 'Produk Paling Menguntungkan',
-                actionLabel: null,
+              // Section Header with "Lihat Semua" action
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacing16,
+                ),
+                child: ModernSectionHeader(
+                  title: 'Produk Paling Menguntungkan',
+                  actionLabel: 'Lihat Semua',
+                  onActionTap: () => context.push('/reports/products'),
+                ),
               ),
 
               const SizedBox(height: AppDimensions.spacing12),
 
               // Top Profitable Products List
-              topProductsAsync.when(
-                data: (products) => TopProfitableProductsList(
-                  products: products,
-                  onProductTap: (productId) =>
-                      context.push('/products/$productId'),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacing16,
                 ),
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(child: ModernLoading()),
-                ),
-                error: (error, _) => ModernErrorState(
-                  message: error.toString(),
-                  onRetry: () => ref.invalidate(topProfitableProductsProvider),
+                child: topProductsAsync.when(
+                  data: (products) => TopProfitableProductsList(
+                    products: products,
+                    onProductTap: (productId) =>
+                        context.push('/products/$productId'),
+                  ),
+                  loading: () => const SizedBox(
+                    height: 200,
+                    child: Center(child: ModernLoading()),
+                  ),
+                  error: (error, _) => ModernErrorState(
+                    message: error.toString(),
+                    onRetry: () =>
+                        ref.invalidate(topProfitableProductsProvider),
+                  ),
                 ),
               ),
 

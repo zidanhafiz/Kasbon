@@ -6,6 +6,19 @@ import '../../domain/entities/profit_summary.dart';
 import '../../domain/usecases/get_product_profitability.dart';
 import '../../domain/usecases/get_profit_summary.dart';
 import '../../domain/usecases/get_top_profitable_products.dart';
+import 'date_range_provider.dart';
+
+/// Provider for profit summary based on selected date range
+final profitSummaryByDateRangeProvider =
+    FutureProvider.autoDispose<ProfitSummary>((ref) async {
+  final dateRange = ref.watch(dateRangeProvider);
+  final useCase = getIt<GetProfitSummary>();
+  final result = await useCase(dateRange.toParams());
+  return result.fold(
+    (failure) => throw Exception(failure.message),
+    (summary) => summary,
+  );
+});
 
 /// Provider for today's profit summary
 final todayProfitSummaryProvider =

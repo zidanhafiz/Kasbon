@@ -24,12 +24,18 @@ import '../../features/receipt/data/repositories/shop_settings_repository_impl.d
 import '../../features/receipt/domain/repositories/shop_settings_repository.dart';
 import '../../features/receipt/domain/usecases/get_shop_settings.dart';
 import '../../features/reports/data/datasources/profit_local_datasource.dart';
+import '../../features/reports/data/datasources/report_local_datasource.dart';
 import '../../features/reports/data/repositories/profit_report_repository_impl.dart';
+import '../../features/reports/data/repositories/report_repository_impl.dart';
 import '../../features/reports/domain/repositories/profit_report_repository.dart';
+import '../../features/reports/domain/repositories/report_repository.dart';
 import '../../features/debt/domain/usecases/get_unpaid_debts.dart';
 import '../../features/debt/domain/usecases/mark_debt_paid.dart';
+import '../../features/reports/domain/usecases/get_daily_sales.dart';
 import '../../features/reports/domain/usecases/get_product_profitability.dart';
 import '../../features/reports/domain/usecases/get_profit_summary.dart';
+import '../../features/reports/domain/usecases/get_sales_summary.dart';
+import '../../features/reports/domain/usecases/get_top_products.dart';
 import '../../features/reports/domain/usecases/get_top_profitable_products.dart';
 import '../../features/transactions/data/datasources/transaction_local_datasource.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -186,13 +192,19 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ProfitLocalDataSource>(
     () => ProfitLocalDataSourceImpl(getIt<DatabaseHelper>()),
   );
+  getIt.registerLazySingleton<ReportLocalDataSource>(
+    () => ReportLocalDataSourceImpl(getIt<DatabaseHelper>()),
+  );
 
   // Repositories
   getIt.registerLazySingleton<ProfitReportRepository>(
     () => ProfitReportRepositoryImpl(getIt<ProfitLocalDataSource>()),
   );
+  getIt.registerLazySingleton<ReportRepository>(
+    () => ReportRepositoryImpl(getIt<ReportLocalDataSource>()),
+  );
 
-  // Use Cases
+  // Use Cases - Profit
   getIt.registerLazySingleton(
     () => GetProfitSummary(getIt<ProfitReportRepository>()),
   );
@@ -201,6 +213,17 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton(
     () => GetProductProfitability(getIt<ProfitReportRepository>()),
+  );
+
+  // Use Cases - Basic Reports
+  getIt.registerLazySingleton(
+    () => GetSalesSummary(getIt<ReportRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetTopProducts(getIt<ReportRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetDailySales(getIt<ReportRepository>()),
   );
 
   logger.i('Dependencies configured successfully');
