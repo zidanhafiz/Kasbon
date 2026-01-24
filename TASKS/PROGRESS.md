@@ -11,15 +11,15 @@
 ```
 Setup Phase:       [##########] 100% (3/3)
 MVP P0 Features:   [##########] 100% (7/7)
-MVP P1 Features:   [#####     ] 50% (2/4)
+MVP P1 Features:   [#######   ] 75% (3/4)
 Testing & Polish:  [          ] 0% (0/2)
 --------------------------------------------
-MVP TOTAL:         [########  ] 75% (12/16)
+MVP TOTAL:         [########  ] 81% (13/16)
 
 Phase 2:           [          ] 0% (0/4)
 Deployment:        [          ] 0% (0/1)
 --------------------------------------------
-FULL PROJECT:      [######    ] 57% (12/21)
+FULL PROJECT:      [######    ] 62% (13/21)
 ```
 
 ---
@@ -40,6 +40,7 @@ FULL PROJECT:      [######    ] 57% (12/21)
 | 010 | Profit Calculation | Jan 21, 2025 | Profit reports, dashboard comparison, top products, product detail profit history |
 | 011 | Debt Tracking | Jan 21, 2025 | Hutang payment option, debt list screen, mark as paid, debt summary, navigation integration |
 | 012 | Basic Reports | Jan 24, 2025 | Reports hub, sales report with date range selection, revenue/transaction summaries |
+| 013 | Settings | Jan 24, 2025 | Shop profile, receipt customization, app settings (low stock threshold), about screen |
 
 ---
 
@@ -55,8 +56,8 @@ FULL PROJECT:      [######    ] 57% (12/21)
 
 | # | Task | Priority | Prerequisites |
 |---|------|----------|---------------|
-| 013 | Settings | P1 | 003 ✅ |
-| 014 | Backup & Restore | P1 | 013 |
+| 014 | Backup & Restore | P1 | 013 ✅ |
+| 015 | Testing | P1 | All P0/P1 |
 
 ---
 
@@ -81,7 +82,7 @@ FULL PROJECT:      [######    ] 57% (12/21)
 ### Milestone 4: MVP Complete
 - [x] TASK_011: Debt Tracking
 - [x] TASK_012: Basic Reports
-- [ ] TASK_013: Settings
+- [x] TASK_013: Settings
 - [ ] TASK_014: Backup & Restore
 
 ### Milestone 5: Beta Ready
@@ -147,4 +148,4 @@ FULL PROJECT:      [######    ] 57% (12/21)
 
 ---
 
-*Last Updated: January 24, 2025 - TASK_012 Basic Reports Completed*
+*Last Updated: January 24, 2025 - TASK_013 Settings Completed*

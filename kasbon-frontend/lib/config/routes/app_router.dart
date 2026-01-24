@@ -16,6 +16,11 @@ import '../../features/reports/presentation/screens/product_report_screen.dart';
 import '../../features/reports/presentation/screens/profit_report_screen.dart';
 import '../../features/reports/presentation/screens/reports_hub_screen.dart';
 import '../../features/reports/presentation/screens/sales_report_screen.dart';
+import '../../features/settings/presentation/screens/about_screen.dart';
+import '../../features/settings/presentation/screens/app_settings_screen.dart';
+import '../../features/settings/presentation/screens/receipt_settings_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/shop_profile_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
 import '../../shared/modern/modern.dart';
@@ -40,6 +45,10 @@ class AppRoutes {
   static const String reportsProfit = '/reports/profit';
   static const String debts = '/debts';
   static const String settings = '/settings';
+  static const String settingsShopProfile = '/settings/shop-profile';
+  static const String settingsReceipt = '/settings/receipt';
+  static const String settingsApp = '/settings/app';
+  static const String settingsAbout = '/settings/about';
   static const String dev = '/dev';
   static const String designSystem = '/dev/design-system';
   static const String devSeed = '/dev/seed';
@@ -211,14 +220,52 @@ class AppRouter {
             ),
           ),
 
-          // Settings
+          // Settings with nested routes
           GoRoute(
             path: AppRoutes.settings,
             name: 'settings',
             pageBuilder: (context, state) => _buildPage(
               state: state,
-              child: const _PlaceholderScreen(title: 'Pengaturan'),
+              child: const SettingsScreen(),
             ),
+            routes: [
+              // Shop Profile - /settings/shop-profile
+              GoRoute(
+                path: 'shop-profile',
+                name: 'settings-shop-profile',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const ShopProfileScreen(),
+                ),
+              ),
+              // Receipt Settings - /settings/receipt
+              GoRoute(
+                path: 'receipt',
+                name: 'settings-receipt',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const ReceiptSettingsScreen(),
+                ),
+              ),
+              // App Settings - /settings/app
+              GoRoute(
+                path: 'app',
+                name: 'settings-app',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const AppSettingsScreen(),
+                ),
+              ),
+              // About - /settings/about
+              GoRoute(
+                path: 'about',
+                name: 'settings-about',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const AboutScreen(),
+                ),
+              ),
+            ],
           ),
 
           // Dev Tools (development only)

@@ -3,7 +3,7 @@
 **Priority:** P1 (Core)
 **Complexity:** LOW
 **Phase:** MVP
-**Status:** Not Started
+**Status:** Completed (Jan 24, 2025)
 
 ---
 
@@ -303,15 +303,15 @@ class ShopSettings extends Equatable {
 
 ## Acceptance Criteria
 
-- [ ] Can view and edit shop profile (name, address, phone)
-- [ ] Can customize receipt header and footer
-- [ ] Can set low stock threshold
-- [ ] Settings save successfully
-- [ ] Settings persist after app restart
-- [ ] About screen shows app version
-- [ ] Can open external links (website, WhatsApp)
-- [ ] Form validation for required fields
-- [ ] Success feedback on save
+- [x] Can view and edit shop profile (name, address, phone)
+- [x] Can customize receipt header and footer
+- [x] Can set low stock threshold
+- [x] Settings save successfully
+- [x] Settings persist after app restart
+- [x] About screen shows app version
+- [x] Can open external links (website, WhatsApp)
+- [x] Form validation for required fields
+- [x] Success feedback on save
 
 ---
 
