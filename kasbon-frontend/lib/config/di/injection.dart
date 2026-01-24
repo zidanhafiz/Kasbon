@@ -1,6 +1,15 @@
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 
+import '../../core/services/backup_service.dart';
+import '../../features/backup/data/repositories/backup_repository_impl.dart';
+import '../../features/backup/domain/repositories/backup_repository.dart';
+import '../../features/backup/domain/usecases/create_backup.dart';
+import '../../features/backup/domain/usecases/get_backup_info.dart';
+import '../../features/backup/domain/usecases/get_data_counts.dart';
+import '../../features/backup/domain/usecases/get_last_backup.dart';
+import '../../features/backup/domain/usecases/clear_all_data.dart';
+import '../../features/backup/domain/usecases/restore_backup.dart';
 import '../../features/categories/data/datasources/category_local_datasource.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
@@ -229,6 +238,28 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(
     () => GetDailySales(getIt<ReportRepository>()),
   );
+
+  // ===========================================
+  // BACKUP FEATURE
+  // ===========================================
+
+  // Services
+  getIt.registerLazySingleton<BackupService>(
+    () => BackupService(getIt<DatabaseHelper>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<BackupRepository>(
+    () => BackupRepositoryImpl(getIt<BackupService>()),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => CreateBackup(getIt<BackupRepository>()));
+  getIt.registerLazySingleton(() => RestoreBackup(getIt<BackupRepository>()));
+  getIt.registerLazySingleton(() => GetBackupInfo(getIt<BackupRepository>()));
+  getIt.registerLazySingleton(() => GetLastBackup(getIt<BackupRepository>()));
+  getIt.registerLazySingleton(() => GetDataCounts(getIt<BackupRepository>()));
+  getIt.registerLazySingleton(() => ClearAllData(getIt<BackupRepository>()));
 
   logger.i('Dependencies configured successfully');
   logger.i('Database initialized: ${databaseHelper.isInitialized}');

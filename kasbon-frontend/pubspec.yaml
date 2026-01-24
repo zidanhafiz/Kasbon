@@ -52,6 +52,9 @@ dependencies:
   flutter_keyboard_visibility: ^6.0.0
   package_info_plus: ^8.0.0
 
+  # File Picker (for backup restore)
+  file_picker: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

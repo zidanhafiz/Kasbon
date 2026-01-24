@@ -50,3 +50,21 @@ class NotFoundException extends AppException {
     super.code,
   });
 }
+
+/// Exception for backup/restore operations
+class BackupException extends AppException {
+  const BackupException({
+    required super.message,
+    super.code,
+    super.originalError,
+  });
+}
+
+/// Exception for file system operations
+class FileException extends AppException {
+  const FileException({
+    required super.message,
+    super.code,
+    super.originalError,
+  });
+}

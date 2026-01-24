@@ -3,7 +3,7 @@
 **Priority:** P1 (Core)
 **Complexity:** MEDIUM
 **Phase:** MVP
-**Status:** Not Started
+**Status:** Completed (Jan 24, 2025)
 
 ---
 
@@ -25,63 +25,63 @@ Enable users to backup their data to a JSON file and restore it later. This prov
 ### 1. Backup Functionality
 
 #### Export Service
-- [ ] Create `lib/core/services/backup_service.dart`
+- [x] Create `lib/core/services/backup_service.dart`
   - exportToJson() - exports all data
   - Returns JSON string
 
-- [ ] Export includes:
+- [x] Export includes:
   - shop_settings
   - categories
   - products
   - transactions
   - transaction_items
 
-- [ ] Metadata included:
+- [x] Metadata included:
   - backup_version
   - backup_date
   - app_version
   - device_info
 
 #### File Operations
-- [ ] Create `lib/core/services/file_service.dart`
+- [x] Create `lib/core/services/file_service.dart`
   - saveToFile(content, filename)
   - readFromFile(path)
   - getBackupDirectory()
 
-- [ ] Filename format: `kasbon_backup_YYYYMMDD_HHmmss.json`
+- [x] Filename format: `kasbon_backup_YYYYMMDD_HHmmss.json`
 
 ### 2. Restore Functionality
 
 #### Import Service
-- [ ] Update `backup_service.dart`
+- [x] Update `backup_service.dart`
   - importFromJson(String json)
   - Validates backup version
   - Clears existing data (with confirmation)
   - Inserts backup data
 
-- [ ] Version compatibility check
-- [ ] Data validation before import
+- [x] Version compatibility check
+- [x] Data validation before import
 
 ### 3. Presentation Layer
 
 #### Screens
-- [ ] Create `lib/features/settings/presentation/screens/backup_restore_screen.dart`
+- [x] Create `lib/features/settings/presentation/screens/backup_restore_screen.dart`
   - Backup section
   - Restore section
   - Backup history (optional)
 
 #### Widgets
-- [ ] Create `lib/features/settings/presentation/widgets/backup_card.dart`
-- [ ] Create `lib/features/settings/presentation/widgets/restore_dialog.dart`
+- [x] Create `lib/features/settings/presentation/widgets/backup_card.dart`
+- [x] Create `lib/features/settings/presentation/widgets/restore_dialog.dart`
 
 ### 4. Share Functionality
 
-- [ ] Share backup file via:
+- [x] Share backup file via:
   - System share sheet
   - Google Drive (via share)
   - WhatsApp (via share)
 
-- [ ] Use `share_plus` package
+- [x] Use `share_plus` package
 
 ---
 
@@ -333,16 +333,16 @@ class BackupService {
 
 ## Acceptance Criteria
 
-- [ ] Can create backup of all data
-- [ ] Backup saves to device storage
-- [ ] Backup can be shared via system share
-- [ ] Can select backup file to restore
-- [ ] Restore shows confirmation dialog
-- [ ] Restore warns about data replacement
-- [ ] Progress indicator during restore
-- [ ] Success/error feedback
-- [ ] Restored data is functional
-- [ ] Invalid backup files are rejected
+- [x] Can create backup of all data
+- [x] Backup saves to device storage
+- [x] Backup can be shared via system share
+- [x] Can select backup file to restore
+- [x] Restore shows confirmation dialog
+- [x] Restore warns about data replacement
+- [x] Progress indicator during restore
+- [x] Success/error feedback
+- [x] Restored data is functional
+- [x] Invalid backup files are rejected
 
 ---
 

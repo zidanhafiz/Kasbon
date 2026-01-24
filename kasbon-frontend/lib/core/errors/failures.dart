@@ -59,3 +59,19 @@ class NotFoundFailure extends Failure {
     super.code,
   });
 }
+
+/// Failure for backup/restore operations
+class BackupFailure extends Failure {
+  const BackupFailure({
+    required super.message,
+    super.code,
+  });
+}
+
+/// Failure for file system operations
+class FileFailure extends Failure {
+  const FileFailure({
+    required super.message,
+    super.code,
+  });
+}

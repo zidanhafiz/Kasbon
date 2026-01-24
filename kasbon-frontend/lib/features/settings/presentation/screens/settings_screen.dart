@@ -80,6 +80,13 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Lainnya',
                 children: [
                   SettingsTile.navigation(
+                    icon: Icons.backup_rounded,
+                    iconColor: AppColors.success,
+                    title: 'Backup & Restore',
+                    subtitle: 'Cadangkan dan pulihkan data',
+                    onTap: () => context.push('/settings/backup'),
+                  ),
+                  SettingsTile.navigation(
                     icon: Icons.info_outline_rounded,
                     iconColor: AppColors.textSecondary,
                     title: 'Tentang Aplikasi',

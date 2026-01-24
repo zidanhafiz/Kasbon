@@ -16,6 +16,7 @@ import '../../features/reports/presentation/screens/product_report_screen.dart';
 import '../../features/reports/presentation/screens/profit_report_screen.dart';
 import '../../features/reports/presentation/screens/reports_hub_screen.dart';
 import '../../features/reports/presentation/screens/sales_report_screen.dart';
+import '../../features/backup/presentation/screens/backup_restore_screen.dart';
 import '../../features/settings/presentation/screens/about_screen.dart';
 import '../../features/settings/presentation/screens/app_settings_screen.dart';
 import '../../features/settings/presentation/screens/receipt_settings_screen.dart';
@@ -49,6 +50,7 @@ class AppRoutes {
   static const String settingsReceipt = '/settings/receipt';
   static const String settingsApp = '/settings/app';
   static const String settingsAbout = '/settings/about';
+  static const String settingsBackup = '/settings/backup';
   static const String dev = '/dev';
   static const String designSystem = '/dev/design-system';
   static const String devSeed = '/dev/seed';
@@ -263,6 +265,15 @@ class AppRouter {
                 pageBuilder: (context, state) => _buildPage(
                   state: state,
                   child: const AboutScreen(),
+                ),
+              ),
+              // Backup & Restore - /settings/backup
+              GoRoute(
+                path: 'backup',
+                name: 'settings-backup',
+                pageBuilder: (context, state) => _buildPage(
+                  state: state,
+                  child: const BackupRestoreScreen(),
                 ),
               ),
             ],

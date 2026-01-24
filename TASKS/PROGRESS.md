@@ -11,15 +11,15 @@
 ```
 Setup Phase:       [##########] 100% (3/3)
 MVP P0 Features:   [##########] 100% (7/7)
-MVP P1 Features:   [#######   ] 75% (3/4)
+MVP P1 Features:   [##########] 100% (4/4)
 Testing & Polish:  [          ] 0% (0/2)
 --------------------------------------------
-MVP TOTAL:         [########  ] 81% (13/16)
+MVP TOTAL:         [########  ] 88% (14/16)
 
 Phase 2:           [          ] 0% (0/4)
 Deployment:        [          ] 0% (0/1)
 --------------------------------------------
-FULL PROJECT:      [######    ] 62% (13/21)
+FULL PROJECT:      [######    ] 67% (14/21)
 ```
 
 ---
@@ -41,6 +41,7 @@ FULL PROJECT:      [######    ] 62% (13/21)
 | 011 | Debt Tracking | Jan 21, 2025 | Hutang payment option, debt list screen, mark as paid, debt summary, navigation integration |
 | 012 | Basic Reports | Jan 24, 2025 | Reports hub, sales report with date range selection, revenue/transaction summaries |
 | 013 | Settings | Jan 24, 2025 | Shop profile, receipt customization, app settings (low stock threshold), about screen |
+| 014 | Backup & Restore | Jan 24, 2025 | JSON export/import, file picker, share functionality, restore confirmation |
 
 ---
 
@@ -56,8 +57,8 @@ FULL PROJECT:      [######    ] 62% (13/21)
 
 | # | Task | Priority | Prerequisites |
 |---|------|----------|---------------|
-| 014 | Backup & Restore | P1 | 013 ✅ |
-| 015 | Testing | P1 | All P0/P1 |
+| 015 | Testing | P1 | All P0/P1 ✅ |
+| 016 | Beta Preparation | P1 | 015 |
 
 ---
 
@@ -79,11 +80,11 @@ FULL PROJECT:      [######    ] 62% (13/21)
 - [x] TASK_009: Stock Tracking
 - [x] TASK_010: Profit Calculation
 
-### Milestone 4: MVP Complete
+### Milestone 4: MVP Complete ✅
 - [x] TASK_011: Debt Tracking
 - [x] TASK_012: Basic Reports
 - [x] TASK_013: Settings
-- [ ] TASK_014: Backup & Restore
+- [x] TASK_014: Backup & Restore
 
 ### Milestone 5: Beta Ready
 - [ ] TASK_015: Testing
@@ -148,4 +149,4 @@ FULL PROJECT:      [######    ] 62% (13/21)
 
 ---
 
-*Last Updated: January 24, 2025 - TASK_013 Settings Completed*
+*Last Updated: January 24, 2025 - TASK_014 Backup & Restore Completed*
