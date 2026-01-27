@@ -346,8 +346,9 @@ class ModernAppBar extends StatelessWidget implements PreferredSizeWidget {
       case ModernAppBarVariant.elevated:
         return 2;
       case ModernAppBarVariant.flat:
-      case ModernAppBarVariant.transparent:
       case ModernAppBarVariant.primary:
+        return 1; // Thin shadow for visual separation
+      case ModernAppBarVariant.transparent:
         return 0;
     }
   }

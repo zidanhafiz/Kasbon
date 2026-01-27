@@ -300,30 +300,42 @@ class _ModernMobileBottomNav extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        BottomAppBar(
-          height: AppDimensions.bottomNavHeight,
-          padding: EdgeInsets.zero,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 8.0,
-          color: Colors.white,
-          elevation: 8,
-          shadowColor: Colors.black.withValues(alpha: 0.1),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // First half of items
-              ...List.generate(
-                (items.length / 2).floor(),
-                (index) => _buildNavItem(index),
-              ),
-              // Space for FAB
-              const SizedBox(width: AppDimensions.fabSize + 16),
-              // Second half of items
-              ...List.generate(
-                (items.length / 2).ceil(),
-                (index) => _buildNavItem(index + (items.length / 2).floor()),
+        // Wrap BottomAppBar in Container with BoxShadow for upward shadow
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, -2), // Negative Y = shadow goes UP
               ),
             ],
+          ),
+          child: BottomAppBar(
+            height: AppDimensions.bottomNavHeight,
+            padding: EdgeInsets.zero,
+            shape: const CircularNotchedRectangle(),
+            notchMargin: 8.0,
+            color: Colors.white,
+            elevation: 0, // Disable Flutter's elevation
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // First half of items
+                ...List.generate(
+                  (items.length / 2).floor(),
+                  (index) => _buildNavItem(index),
+                ),
+                // Space for FAB
+                const SizedBox(width: AppDimensions.fabSize + 16),
+                // Second half of items
+                ...List.generate(
+                  (items.length / 2).ceil(),
+                  (index) => _buildNavItem(index + (items.length / 2).floor()),
+                ),
+              ],
+            ),
           ),
         ),
         // Center FAB
@@ -348,23 +360,36 @@ class _ModernMobileBottomNav extends StatelessWidget {
   }
 
   Widget _buildSimpleBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textTertiary,
-      backgroundColor: Colors.white,
-      elevation: 8,
-      items: items
-          .map(
-            (item) => BottomNavigationBarItem(
-              icon: Icon(item.icon),
-              activeIcon: Icon(item.activeIcon ?? item.icon),
-              label: item.label,
-            ),
-          )
-          .toList(),
+    // Wrap BottomNavigationBar in Container with BoxShadow for upward shadow
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 4,
+            offset: const Offset(0, -2), // Negative Y = shadow goes UP
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTap,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textTertiary,
+        backgroundColor: Colors.white,
+        elevation: 0, // Disable Flutter's elevation
+        items: items
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                activeIcon: Icon(item.activeIcon ?? item.icon),
+                label: item.label,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
@@ -436,7 +461,7 @@ class _ModernTabletSidebar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(2, 0),
           ),
