@@ -61,9 +61,17 @@ class TransactionDetailScreen extends ConsumerWidget {
   ) {
     final isTablet = context.isTabletOrDesktop;
 
+    // Calculate bottom padding based on device type to account for bottom nav
+    final bottomPadding = context.isMobile
+        ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+        : AppDimensions.spacing16;
+
     return SingleChildScrollView(
-      padding: EdgeInsets.all(
-        isTablet ? AppDimensions.spacing24 : AppDimensions.spacing16,
+      padding: EdgeInsets.only(
+        left: isTablet ? AppDimensions.spacing24 : AppDimensions.spacing16,
+        right: isTablet ? AppDimensions.spacing24 : AppDimensions.spacing16,
+        top: isTablet ? AppDimensions.spacing24 : AppDimensions.spacing16,
+        bottom: isTablet ? AppDimensions.spacing24 : bottomPadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

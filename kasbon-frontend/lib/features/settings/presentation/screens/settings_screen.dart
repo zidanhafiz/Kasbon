@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_section.dart';
@@ -29,77 +30,85 @@ class SettingsScreen extends ConsumerWidget {
           message: error.toString(),
           onRetry: () => ref.invalidate(shopSettingsProvider),
         ),
-        data: (settings) => SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppDimensions.spacing16),
+        data: (settings) {
+          // Calculate bottom padding based on device type to account for bottom nav
+          final bottomPadding = context.isMobile
+              ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+              : AppDimensions.spacing16;
 
-              // TOKO Section
-              SettingsSection(
-                title: 'Toko',
-                children: [
-                  SettingsTile.navigation(
-                    icon: Icons.store_rounded,
-                    iconColor: AppColors.primary,
-                    title: 'Profil Toko',
-                    subtitle: settings.name,
-                    onTap: () => context.push('/settings/shop-profile'),
-                  ),
-                  SettingsTile.navigation(
-                    icon: Icons.receipt_long_rounded,
-                    iconColor: AppColors.info,
-                    title: 'Pengaturan Struk',
-                    subtitle: 'Header & footer struk',
-                    onTap: () => context.push('/settings/receipt'),
-                  ),
-                ],
-              ),
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(bottom: bottomPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppDimensions.spacing16),
 
-              const SizedBox(height: AppDimensions.spacing24),
+                // TOKO Section
+                SettingsSection(
+                  title: 'Toko',
+                  children: [
+                    SettingsTile.navigation(
+                      icon: Icons.store_rounded,
+                      iconColor: AppColors.primary,
+                      title: 'Profil Toko',
+                      subtitle: settings.name,
+                      onTap: () => context.push('/settings/shop-profile'),
+                    ),
+                    SettingsTile.navigation(
+                      icon: Icons.receipt_long_rounded,
+                      iconColor: AppColors.info,
+                      title: 'Pengaturan Struk',
+                      subtitle: 'Header & footer struk',
+                      onTap: () => context.push('/settings/receipt'),
+                    ),
+                  ],
+                ),
 
-              // APLIKASI Section
-              SettingsSection(
-                title: 'Aplikasi',
-                children: [
-                  SettingsTile.navigation(
-                    icon: Icons.tune_rounded,
-                    iconColor: AppColors.warning,
-                    title: 'Pengaturan Aplikasi',
-                    subtitle: 'Batas stok rendah: ${settings.lowStockThreshold}',
-                    onTap: () => context.push('/settings/app'),
-                  ),
-                ],
-              ),
+                const SizedBox(height: AppDimensions.spacing24),
 
-              const SizedBox(height: AppDimensions.spacing24),
+                // APLIKASI Section
+                SettingsSection(
+                  title: 'Aplikasi',
+                  children: [
+                    SettingsTile.navigation(
+                      icon: Icons.tune_rounded,
+                      iconColor: AppColors.warning,
+                      title: 'Pengaturan Aplikasi',
+                      subtitle: 'Batas stok rendah: ${settings.lowStockThreshold}',
+                      onTap: () => context.push('/settings/app'),
+                    ),
+                  ],
+                ),
 
-              // LAINNYA Section
-              SettingsSection(
-                title: 'Lainnya',
-                children: [
-                  SettingsTile.navigation(
-                    icon: Icons.backup_rounded,
-                    iconColor: AppColors.success,
-                    title: 'Backup & Restore',
-                    subtitle: 'Cadangkan dan pulihkan data',
-                    onTap: () => context.push('/settings/backup'),
-                  ),
-                  SettingsTile.navigation(
-                    icon: Icons.info_outline_rounded,
-                    iconColor: AppColors.textSecondary,
-                    title: 'Tentang Aplikasi',
-                    subtitle: 'Versi & informasi',
-                    onTap: () => context.push('/settings/about'),
-                  ),
-                ],
-              ),
+                const SizedBox(height: AppDimensions.spacing24),
 
-              const SizedBox(height: AppDimensions.spacing32),
-            ],
-          ),
-        ),
+                // LAINNYA Section
+                SettingsSection(
+                  title: 'Lainnya',
+                  children: [
+                    SettingsTile.navigation(
+                      icon: Icons.backup_rounded,
+                      iconColor: AppColors.success,
+                      title: 'Backup & Restore',
+                      subtitle: 'Cadangkan dan pulihkan data',
+                      onTap: () => context.push('/settings/backup'),
+                    ),
+                    SettingsTile.navigation(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: AppColors.textSecondary,
+                      title: 'Tentang Aplikasi',
+                      subtitle: 'Versi & informasi',
+                      onTap: () => context.push('/settings/about'),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppDimensions.spacing32),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

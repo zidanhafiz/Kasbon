@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../config/theme/app_dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../providers/backup_provider.dart';
 import '../widgets/backup_section.dart';
@@ -35,35 +36,47 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         onNotificationTap: () => {},
         onProfileTap: () => {},
       ),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Backup Section
-              BackupSection(
-                isCreatingBackup: backupState.isCreatingBackup,
-                onCreateBackup: _handleCreateBackup,
-              ),
+      body: Builder(
+        builder: (context) {
+          // Calculate bottom padding based on device type to account for bottom nav
+          final bottomPadding = context.isMobile
+              ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+              : AppDimensions.spacing16;
 
-              const SizedBox(height: AppDimensions.spacing24),
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(
+              left: AppDimensions.spacing16,
+              right: AppDimensions.spacing16,
+              top: AppDimensions.spacing16,
+              bottom: bottomPadding,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Backup Section
+                BackupSection(
+                  isCreatingBackup: backupState.isCreatingBackup,
+                  onCreateBackup: _handleCreateBackup,
+                ),
 
-              // Restore Section
-              RestoreSection(
-                onSelectFile: _handleSelectFile,
-              ),
+                const SizedBox(height: AppDimensions.spacing24),
 
-              const SizedBox(height: AppDimensions.spacing24),
+                // Restore Section
+                RestoreSection(
+                  onSelectFile: _handleSelectFile,
+                ),
 
-              // Danger Zone Section
-              DangerZoneSection(
-                onClearAllData: _handleClearAllData,
-              ),
-            ],
-          ),
-        ),
+                const SizedBox(height: AppDimensions.spacing24),
+
+                // Danger Zone Section
+                DangerZoneSection(
+                  onClearAllData: _handleClearAllData,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

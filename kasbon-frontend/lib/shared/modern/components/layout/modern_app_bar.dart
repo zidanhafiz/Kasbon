@@ -352,6 +352,27 @@ class ModernAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
   }
 
+  /// Gets the appropriate system overlay style based on background color.
+  ///
+  /// Primary variant has dark background, needs light (white) icons.
+  /// All other variants have light backgrounds, need dark icons.
+  SystemUiOverlayStyle get _effectiveSystemOverlayStyle {
+    if (systemOverlayStyle != null) return systemOverlayStyle!;
+
+    final brightness = variant == ModernAppBarVariant.primary
+        ? Brightness.light
+        : Brightness.dark;
+
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: brightness,
+      // iOS uses opposite convention: statusBarBrightness describes the bar itself
+      statusBarBrightness: brightness == Brightness.dark
+          ? Brightness.light // iOS: light status bar for dark icons
+          : Brightness.dark, // iOS: dark status bar for light icons
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final effectiveTitle = titleWidget ??
@@ -374,7 +395,7 @@ class ModernAppBar extends StatelessWidget implements PreferredSizeWidget {
       shadowColor: shadowColor ?? AppColors.shadow,
       surfaceTintColor: surfaceTintColor ?? Colors.transparent,
       bottom: bottom,
-      systemOverlayStyle: systemOverlayStyle,
+      systemOverlayStyle: _effectiveSystemOverlayStyle,
       iconTheme: IconThemeData(
         color: _foregroundColor,
         size: AppDimensions.iconLarge,

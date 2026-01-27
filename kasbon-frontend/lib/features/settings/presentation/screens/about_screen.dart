@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../providers/about_provider.dart';
 import '../widgets/settings_section.dart';
@@ -26,76 +27,88 @@ class AboutScreen extends ConsumerWidget {
         onNotificationTap: () {},
         onProfileTap: () {},
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacing16),
-        child: Column(
-          children: [
-            // App logo and info
-            _buildAppHeader(context, appInfoAsync),
+      body: Builder(
+        builder: (context) {
+          // Calculate bottom padding based on device type to account for bottom nav
+          final bottomPadding = context.isMobile
+              ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+              : AppDimensions.spacing16;
 
-            const SizedBox(height: AppDimensions.spacing32),
-
-            // Contact section
-            SettingsSection(
-              title: 'Hubungi Kami',
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              top: AppDimensions.spacing16,
+              bottom: bottomPadding,
+            ),
+            child: Column(
               children: [
-                SettingsTile.externalLink(
-                  icon: Icons.chat_rounded,
-                  iconColor: const Color(0xFF25D366), // WhatsApp green
-                  title: 'WhatsApp',
-                  subtitle: 'Kirim pesan via WhatsApp',
-                  onTap: () => _launchWhatsApp(context),
+                // App logo and info
+                _buildAppHeader(context, appInfoAsync),
+
+                const SizedBox(height: AppDimensions.spacing32),
+
+                // Contact section
+                SettingsSection(
+                  title: 'Hubungi Kami',
+                  children: [
+                    SettingsTile.externalLink(
+                      icon: Icons.chat_rounded,
+                      iconColor: const Color(0xFF25D366), // WhatsApp green
+                      title: 'WhatsApp',
+                      subtitle: 'Kirim pesan via WhatsApp',
+                      onTap: () => _launchWhatsApp(context),
+                    ),
+                    SettingsTile.externalLink(
+                      icon: Icons.email_rounded,
+                      iconColor: AppColors.info,
+                      title: 'Email',
+                      subtitle: 'support@kasbon.app',
+                      onTap: () => _launchEmail(context),
+                    ),
+                  ],
                 ),
-                SettingsTile.externalLink(
-                  icon: Icons.email_rounded,
-                  iconColor: AppColors.info,
-                  title: 'Email',
-                  subtitle: 'support@kasbon.app',
-                  onTap: () => _launchEmail(context),
+
+                const SizedBox(height: AppDimensions.spacing24),
+
+                // Legal section
+                SettingsSection(
+                  title: 'Legal',
+                  children: [
+                    SettingsTile.externalLink(
+                      icon: Icons.description_rounded,
+                      iconColor: AppColors.textSecondary,
+                      title: 'Syarat & Ketentuan',
+                      onTap: () => _launchUrl(context, 'https://kasbon.app/terms'),
+                    ),
+                    SettingsTile.externalLink(
+                      icon: Icons.privacy_tip_rounded,
+                      iconColor: AppColors.textSecondary,
+                      title: 'Kebijakan Privasi',
+                      onTap: () => _launchUrl(context, 'https://kasbon.app/privacy'),
+                    ),
+                  ],
                 ),
+
+                const SizedBox(height: AppDimensions.spacing32),
+
+                // Copyright
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacing16,
+                  ),
+                  child: Text(
+                    '© 2024 KASBON. Hak Cipta Dilindungi.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: AppDimensions.spacing16),
               ],
             ),
-
-            const SizedBox(height: AppDimensions.spacing24),
-
-            // Legal section
-            SettingsSection(
-              title: 'Legal',
-              children: [
-                SettingsTile.externalLink(
-                  icon: Icons.description_rounded,
-                  iconColor: AppColors.textSecondary,
-                  title: 'Syarat & Ketentuan',
-                  onTap: () => _launchUrl(context, 'https://kasbon.app/terms'),
-                ),
-                SettingsTile.externalLink(
-                  icon: Icons.privacy_tip_rounded,
-                  iconColor: AppColors.textSecondary,
-                  title: 'Kebijakan Privasi',
-                  onTap: () => _launchUrl(context, 'https://kasbon.app/privacy'),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppDimensions.spacing32),
-
-            // Copyright
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacing16,
-              ),
-              child: Text(
-                '© 2024 KASBON. Hak Cipta Dilindungi.',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacing16),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
