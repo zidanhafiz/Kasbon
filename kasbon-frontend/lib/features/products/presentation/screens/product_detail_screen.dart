@@ -117,7 +117,7 @@ class ProductDetailScreen extends ConsumerWidget {
         bottom: bottomPadding,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildProductHeaderCard(context, ref, product),
           const SizedBox(height: AppDimensions.spacing16),
@@ -130,6 +130,8 @@ class ProductDetailScreen extends ConsumerWidget {
           _buildStockCard(product),
           const SizedBox(height: AppDimensions.spacing16),
           _buildProfitHistoryCard(ref, product),
+          const SizedBox(height: AppDimensions.spacing24),
+          _buildActionButtons(context, ref, product),
         ],
       ),
     );
@@ -174,6 +176,8 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: AppDimensions.spacing24),
+          _buildActionButtons(context, ref, product),
         ],
       ),
     );
@@ -352,40 +356,63 @@ class ProductDetailScreen extends ConsumerWidget {
   ) {
     return ModernCard.outlined(
       padding: const EdgeInsets.all(AppDimensions.spacing16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product name and SKU
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product.name, style: AppTextStyles.h3),
-                const SizedBox(height: AppDimensions.spacing4),
-                Text(
-                  product.sku,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
+          Text(product.name, style: AppTextStyles.h3),
+          const SizedBox(height: AppDimensions.spacing4),
+          Text(
+            product.sku,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
             ),
-          ),
-          const SizedBox(width: AppDimensions.spacing12),
-          // Action buttons
-          ModernButton.secondary(
-            onPressed: () => context.push('/products/${product.id}/edit'),
-            leadingIcon: Icons.edit_outlined,
-            child: const Text('Edit'),
-          ),
-          const SizedBox(width: AppDimensions.spacing8),
-          ModernButton.destructive(
-            onPressed: () => _showDeleteConfirmation(context, ref, product),
-            leadingIcon: Icons.delete_outline,
-            child: const Text('Hapus'),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildActionButtons(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
+    final isTablet = context.isTabletOrDesktop;
+
+    final editButton = ModernButton.secondary(
+      onPressed: () => context.push('/products/${product.id}/edit'),
+      leadingIcon: Icons.edit_outlined,
+      fullWidth: true,
+      child: const Text('Edit Produk'),
+    );
+
+    final deleteButton = ModernButton.destructive(
+      onPressed: () => _showDeleteConfirmation(context, ref, product),
+      leadingIcon: Icons.delete_outline,
+      fullWidth: true,
+      child: const Text('Hapus Produk'),
+    );
+
+    if (isTablet) {
+      // Tablet: 2 columns, aligned to end/right
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(width: 180, child: editButton),
+          const SizedBox(width: AppDimensions.spacing12),
+          SizedBox(width: 180, child: deleteButton),
+        ],
+      );
+    } else {
+      // Mobile: Full-width row
+      return Row(
+        children: [
+          Expanded(child: editButton),
+          const SizedBox(width: AppDimensions.spacing12),
+          Expanded(child: deleteButton),
+        ],
+      );
+    }
   }
 
   Widget _buildProfitHistoryCard(WidgetRef ref, Product product) {

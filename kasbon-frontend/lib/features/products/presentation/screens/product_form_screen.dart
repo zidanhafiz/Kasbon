@@ -50,6 +50,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     'lusin',
     'dus',
     'sachet',
+    'karung',
   ];
 
   @override
@@ -81,7 +82,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _stockController.text = product.stock.toString();
     _minStockController.text = product.minStock.toString();
     _barcodeController.text = product.barcode ?? '';
-    _selectedUnit = product.unit;
+    // Safely set unit - default to 'pcs' if unit not in list
+    _selectedUnit = _units.contains(product.unit) ? product.unit : 'pcs';
   }
 
   Future<void> _submitForm() async {
