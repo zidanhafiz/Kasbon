@@ -49,139 +49,157 @@ class _ClearDataConfirmationDialogState
   @override
   Widget build(BuildContext context) {
     final dataCountsAsync = ref.watch(dataCountsProvider);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final viewInsets = MediaQuery.of(context).viewInsets;
 
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacing24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Delete Icon
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.spacing16),
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.delete_forever_rounded,
-                color: AppColors.error,
-                size: 48,
-              ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacing16),
-
-            // Title
-            const Text(
-              'Hapus Semua Data?',
-              style: AppTextStyles.h3,
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: AppDimensions.spacing16),
-
-            // Data Counts Card
-            dataCountsAsync.when(
-              loading: () => const SizedBox(
-                height: 80,
-                child: Center(child: ModernLoading.small()),
-              ),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (counts) => _buildDataCountsCard(counts),
-            ),
-
-            const SizedBox(height: AppDimensions.spacing16),
-
-            // Warning Message
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacing12),
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-                border: Border.all(
-                  color: AppColors.error.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: screenHeight * 0.85 - viewInsets.bottom,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacing24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Scrollable content
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.warning_rounded,
-                        color: AppColors.error,
-                        size: 20,
-                      ),
-                      const SizedBox(width: AppDimensions.spacing8),
-                      Text(
-                        'PERINGATAN',
-                        style: AppTextStyles.bodySmall.copyWith(
+                      // Delete Icon
+                      Container(
+                        padding: const EdgeInsets.all(AppDimensions.spacing16),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.delete_forever_rounded,
                           color: AppColors.error,
-                          fontWeight: FontWeight.bold,
+                          size: 48,
                         ),
                       ),
+
+                      const SizedBox(height: AppDimensions.spacing16),
+
+                      // Title
+                      const Text(
+                        'Hapus Semua Data?',
+                        style: AppTextStyles.h3,
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacing16),
+
+                      // Data Counts Card
+                      dataCountsAsync.when(
+                        loading: () => const SizedBox(
+                          height: 80,
+                          child: Center(child: ModernLoading.small()),
+                        ),
+                        error: (_, __) => const SizedBox.shrink(),
+                        data: (counts) => _buildDataCountsCard(counts),
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacing16),
+
+                      // Warning Message
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppDimensions.spacing12),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.1),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusMedium),
+                          border: Border.all(
+                            color: AppColors.error.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.warning_rounded,
+                                  color: AppColors.error,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppDimensions.spacing8),
+                                Text(
+                                  'PERINGATAN',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppDimensions.spacing8),
+                            Text(
+                              'Semua data akan dihapus permanen. Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah membuat backup.',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.error,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacing16),
+
+                      // Confirmation Text Input
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ketik "HAPUS" untuk konfirmasi:',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacing8),
+                          ModernTextField(
+                            controller: _confirmController,
+                            hint: 'Ketik HAPUS',
+                            textCapitalization: TextCapitalization.characters,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacing24),
                     ],
                   ),
-                  const SizedBox(height: AppDimensions.spacing8),
-                  Text(
-                    'Semua data akan dihapus permanen. Tindakan ini tidak dapat dibatalkan. Pastikan Anda sudah membuat backup.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.error,
+                ),
+              ),
+
+              // Fixed buttons (always visible)
+              Row(
+                children: [
+                  Expanded(
+                    child: ModernButton.outline(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Batal'),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacing12),
+                  Expanded(
+                    child: ModernButton.destructive(
+                      onPressed: _isConfirmEnabled
+                          ? () => Navigator.of(context).pop(true)
+                          : null,
+                      child: const Text('Hapus'),
                     ),
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacing16),
-
-            // Confirmation Text Input
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ketik "HAPUS" untuk konfirmasi:',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacing8),
-                ModernTextField(
-                  controller: _confirmController,
-                  hint: 'Ketik HAPUS',
-                  textCapitalization: TextCapitalization.characters,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppDimensions.spacing24),
-
-            // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: ModernButton.outline(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Batal'),
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacing12),
-                Expanded(
-                  child: ModernButton.destructive(
-                    onPressed: _isConfirmEnabled
-                        ? () => Navigator.of(context).pop(true)
-                        : null,
-                    child: const Text('Hapus'),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -14,14 +14,20 @@ class BackupRepositoryImpl implements BackupRepository {
   BackupRepositoryImpl(this._backupService);
 
   @override
-  Future<Either<Failure, BackupMetadata>> createBackup() async {
+  Future<Either<Failure, BackupMetadata>> createBackup({
+    String? directoryPath,
+  }) async {
     try {
       // Export data to JSON
       final jsonContent = await _backupService.exportToJson();
 
       // Generate filename and save
       final filename = FileService.generateBackupFilename();
-      final filePath = await FileService.saveBackupFile(jsonContent, filename);
+      final filePath = await FileService.saveBackupFile(
+        jsonContent,
+        filename,
+        directory: directoryPath,
+      );
 
       // Get file size
       final fileSize = await FileService.getFileSize(filePath);

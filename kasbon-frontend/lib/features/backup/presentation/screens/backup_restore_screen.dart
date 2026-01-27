@@ -82,8 +82,29 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
   }
 
   Future<void> _handleCreateBackup() async {
+    // Ask user to select a directory
+    String? selectedDirectory;
+    try {
+      selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Pilih Folder untuk Backup',
+      );
+    } catch (e) {
+      // Directory picker not supported, will use default
+    }
+
+    // If user cancelled the picker, ask if they want to use default
+    if (selectedDirectory == null && mounted) {
+      final useDefault = await _showUseDefaultDirectoryDialog();
+      if (useDefault == null) {
+        // User cancelled completely
+        return;
+      }
+      // useDefault == true means use default directory (selectedDirectory stays null)
+      // useDefault == false would be handled above (picker was cancelled)
+    }
+
     final notifier = ref.read(backupProvider.notifier);
-    final metadata = await notifier.createBackup();
+    final metadata = await notifier.createBackup(directoryPath: selectedDirectory);
 
     if (metadata != null && mounted) {
       // Show success dialog
@@ -110,6 +131,30 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         notifier.clearError();
       }
     }
+  }
+
+  /// Shows a dialog asking if user wants to use default directory
+  /// Returns true if user wants to use default, null if they want to cancel completely
+  Future<bool?> _showUseDefaultDirectoryDialog() async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gunakan Folder Default?'),
+        content: const Text(
+          'Anda belum memilih folder. Backup akan disimpan di folder Download/KASBON_Backup.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Gunakan Default'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleSelectFile() async {

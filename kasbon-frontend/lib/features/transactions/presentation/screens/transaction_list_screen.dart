@@ -60,8 +60,7 @@ class TransactionListScreen extends ConsumerWidget {
     return const ModernEmptyState(
       icon: Icons.receipt_long_outlined,
       title: 'Belum Ada Transaksi',
-      message:
-          'Transaksi akan muncul di sini setelah Anda melakukan penjualan',
+      message: 'Transaksi akan muncul di sini setelah Anda melakukan penjualan',
     );
   }
 
@@ -70,45 +69,54 @@ class TransactionListScreen extends ConsumerWidget {
     Map<DateTime, List<Transaction>> grouped,
   ) {
     final padding = context.horizontalPadding;
+    // Calculate bottom padding based on device type to account for bottom nav
+    final bottomPadding = context.isMobile
+        ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+        : AppDimensions.spacing16;
 
-    return CustomScrollView(
-      slivers: grouped.entries.expand((entry) {
-        final date = entry.key;
-        final transactions = entry.value;
+    final slivers = grouped.entries.expand((entry) {
+      final date = entry.key;
+      final transactions = entry.value;
 
-        return [
-          // Date header (sticky)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _DateHeaderDelegate(date: date),
+      return [
+        // Date header (sticky)
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _DateHeaderDelegate(date: date),
+        ),
+        // Transaction cards
+        SliverPadding(
+          padding: EdgeInsets.symmetric(
+            horizontal: padding,
+            vertical: AppDimensions.spacing8,
           ),
-          // Transaction cards
-          SliverPadding(
-            padding: EdgeInsets.symmetric(
-              horizontal: padding,
-              vertical: AppDimensions.spacing8,
-            ),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final txn = transactions[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: AppDimensions.spacing12,
-                    ),
-                    child: TransactionCard(
-                      transaction: txn,
-                      onTap: () => context.push('/transactions/${txn.id}'),
-                    ),
-                  );
-                },
-                childCount: transactions.length,
-              ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final txn = transactions[index];
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppDimensions.spacing12,
+                  ),
+                  child: TransactionCard(
+                    transaction: txn,
+                    onTap: () => context.push('/transactions/${txn.id}'),
+                  ),
+                );
+              },
+              childCount: transactions.length,
             ),
           ),
-        ];
-      }).toList(),
+        ),
+      ];
+    }).toList();
+
+    // Add bottom padding for mobile devices
+    slivers.add(
+      SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
     );
+
+    return CustomScrollView(slivers: slivers);
   }
 }
 

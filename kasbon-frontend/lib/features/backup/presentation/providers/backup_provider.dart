@@ -111,14 +111,17 @@ class BackupNotifier extends StateNotifier<BackupState> {
         super(const BackupState());
 
   /// Creates a backup
-  Future<BackupMetadata?> createBackup() async {
+  /// If [directoryPath] is provided, saves to that directory instead of default
+  Future<BackupMetadata?> createBackup({String? directoryPath}) async {
     state = state.copyWith(
       isCreatingBackup: true,
       clearError: true,
       clearLastCreatedBackup: true,
     );
 
-    final result = await _createBackup(const NoParams());
+    final result = await _createBackup(
+      CreateBackupParams(directoryPath: directoryPath),
+    );
 
     return result.fold(
       (failure) {

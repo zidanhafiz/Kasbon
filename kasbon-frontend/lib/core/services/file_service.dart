@@ -62,9 +62,23 @@ class FileService {
   }
 
   /// Writes JSON content to a file and returns the file path
-  static Future<String> saveBackupFile(String content, String filename) async {
+  /// If [directory] is provided, saves to that directory instead of the default
+  static Future<String> saveBackupFile(
+    String content,
+    String filename, {
+    String? directory,
+  }) async {
     try {
-      final backupDir = await getBackupDirectory();
+      final backupDir = directory ?? await getBackupDirectory();
+
+      // Ensure directory exists if custom directory is provided
+      if (directory != null) {
+        final dir = Directory(backupDir);
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+      }
+
       final filePath = path.join(backupDir, filename);
       final file = File(filePath);
 

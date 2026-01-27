@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../providers/date_range_provider.dart';
 import '../providers/report_provider.dart';
@@ -28,146 +29,85 @@ class SalesReportScreen extends ConsumerWidget {
         onNotificationTap: () {},
         onProfileTap: () {},
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(salesSummaryProvider);
-          ref.invalidate(dailySalesProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppDimensions.spacing16),
+      body: Builder(
+        builder: (context) {
+          // Calculate bottom padding based on device type to account for bottom nav
+          final bottomPadding = context.isMobile
+              ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+              : AppDimensions.spacing16;
 
-              // Date range selector
-              const DateRangeSelector(),
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(salesSummaryProvider);
+              ref.invalidate(dailySalesProvider);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppDimensions.spacing16),
 
-              const SizedBox(height: AppDimensions.spacing24),
+                  // Date range selector
+                  const DateRangeSelector(),
 
-              // Summary stats
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacing16,
-                ),
-                child: salesSummaryAsync.when(
-                  data: (summary) => Column(
-                    children: [
-                      // Revenue stat
-                      SummaryStatCard(
-                        icon: Icons.account_balance_wallet_rounded,
-                        label: 'Total Pendapatan',
-                        value: CurrencyFormatter.format(summary.totalRevenue),
-                        iconColor: AppColors.primary,
-                      ),
-                      const SizedBox(height: AppDimensions.spacing12),
-                      Row(
+                  const SizedBox(height: AppDimensions.spacing24),
+
+                  // Summary stats
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacing16,
+                    ),
+                    child: salesSummaryAsync.when(
+                      data: (summary) => Column(
                         children: [
-                          Expanded(
-                            child: SummaryStatCard(
-                              icon: Icons.trending_up_rounded,
-                              label: 'Laba',
-                              value:
-                                  CurrencyFormatter.format(summary.totalProfit),
-                              iconColor: AppColors.success,
-                              valueColor: AppColors.success,
-                            ),
+                          // Revenue stat
+                          SummaryStatCard(
+                            icon: Icons.account_balance_wallet_rounded,
+                            label: 'Total Pendapatan',
+                            value:
+                                CurrencyFormatter.format(summary.totalRevenue),
+                            iconColor: AppColors.primary,
+                          ),
+                          const SizedBox(height: AppDimensions.spacing12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SummaryStatCard(
+                                  icon: Icons.trending_up_rounded,
+                                  label: 'Laba',
+                                  value: CurrencyFormatter.format(
+                                      summary.totalProfit),
+                                  iconColor: AppColors.success,
+                                  valueColor: AppColors.success,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppDimensions.spacing12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SummaryStatCard(
+                                  icon: Icons.receipt_long_rounded,
+                                  label: 'Transaksi',
+                                  value: '${summary.transactionCount}',
+                                  iconColor: AppColors.info,
+                                ),
+                              ),
+                              const SizedBox(width: AppDimensions.spacing12),
+                              Expanded(
+                                child: SummaryStatCard(
+                                  icon: Icons.shopping_bag_rounded,
+                                  label: 'Item Terjual',
+                                  value: '${summary.itemsSold}',
+                                  iconColor: AppColors.warning,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                      const SizedBox(height: AppDimensions.spacing12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SummaryStatCard(
-                              icon: Icons.receipt_long_rounded,
-                              label: 'Transaksi',
-                              value: '${summary.transactionCount}',
-                              iconColor: AppColors.info,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.spacing12),
-                          Expanded(
-                            child: SummaryStatCard(
-                              icon: Icons.shopping_bag_rounded,
-                              label: 'Item Terjual',
-                              value: '${summary.itemsSold}',
-                              iconColor: AppColors.warning,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  loading: () => const SizedBox(
-                    height: 200,
-                    child: Center(child: ModernLoading()),
-                  ),
-                  error: (error, _) => ModernErrorState(
-                    message: error.toString(),
-                    onRetry: () => ref.invalidate(salesSummaryProvider),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppDimensions.spacing24),
-
-              // Sales chart section
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacing16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ModernSectionHeader(
-                      title: 'Grafik Penjualan',
-                      actionLabel: dateRange.label,
-                    ),
-                    const SizedBox(height: AppDimensions.spacing16),
-                    ModernCard.outlined(
-                      padding: const EdgeInsets.all(AppDimensions.spacing16),
-                      child: dailySalesAsync.when(
-                        data: (sales) => SalesBarChart(
-                          dailySales: sales,
-                          height: 220,
-                        ),
-                        loading: () => const SizedBox(
-                          height: 220,
-                          child: Center(child: ModernLoading()),
-                        ),
-                        error: (error, _) => SizedBox(
-                          height: 220,
-                          child: ModernErrorState(
-                            message: error.toString(),
-                            onRetry: () => ref.invalidate(dailySalesProvider),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppDimensions.spacing24),
-
-              // Daily breakdown section
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacing16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const ModernSectionHeader(
-                      title: 'Rincian Harian',
-                      actionLabel: null,
-                    ),
-                    const SizedBox(height: AppDimensions.spacing12),
-                    dailySalesAsync.when(
-                      data: (sales) => DailySalesList(
-                        dailySales: sales,
-                        showAll: true,
                       ),
                       loading: () => const SizedBox(
                         height: 200,
@@ -175,17 +115,91 @@ class SalesReportScreen extends ConsumerWidget {
                       ),
                       error: (error, _) => ModernErrorState(
                         message: error.toString(),
-                        onRetry: () => ref.invalidate(dailySalesProvider),
+                        onRetry: () => ref.invalidate(salesSummaryProvider),
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              const SizedBox(height: AppDimensions.spacing32),
-            ],
-          ),
-        ),
+                  const SizedBox(height: AppDimensions.spacing24),
+
+                  // Sales chart section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacing16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ModernSectionHeader(
+                          title: 'Grafik Penjualan',
+                          actionLabel: dateRange.label,
+                        ),
+                        const SizedBox(height: AppDimensions.spacing16),
+                        ModernCard.outlined(
+                          padding:
+                              const EdgeInsets.all(AppDimensions.spacing16),
+                          child: dailySalesAsync.when(
+                            data: (sales) => SalesBarChart(
+                              dailySales: sales,
+                              height: 220,
+                            ),
+                            loading: () => const SizedBox(
+                              height: 220,
+                              child: Center(child: ModernLoading()),
+                            ),
+                            error: (error, _) => SizedBox(
+                              height: 220,
+                              child: ModernErrorState(
+                                message: error.toString(),
+                                onRetry: () =>
+                                    ref.invalidate(dailySalesProvider),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppDimensions.spacing24),
+
+                  // Daily breakdown section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacing16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ModernSectionHeader(
+                          title: 'Rincian Harian',
+                          actionLabel: null,
+                        ),
+                        const SizedBox(height: AppDimensions.spacing12),
+                        dailySalesAsync.when(
+                          data: (sales) => DailySalesList(
+                            dailySales: sales,
+                            showAll: true,
+                          ),
+                          loading: () => const SizedBox(
+                            height: 200,
+                            child: Center(child: ModernLoading()),
+                          ),
+                          error: (error, _) => ModernErrorState(
+                            message: error.toString(),
+                            onRetry: () => ref.invalidate(dailySalesProvider),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppDimensions.spacing32),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

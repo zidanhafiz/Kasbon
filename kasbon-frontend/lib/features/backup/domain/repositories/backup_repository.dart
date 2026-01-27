@@ -9,7 +9,10 @@ typedef RestoreProgressCallback = void Function(String step, double progress);
 /// Abstract repository for backup/restore operations
 abstract class BackupRepository {
   /// Creates a backup of all data and returns the backup metadata
-  Future<Either<Failure, BackupMetadata>> createBackup();
+  /// If [directoryPath] is provided, saves to that directory instead of default
+  Future<Either<Failure, BackupMetadata>> createBackup({
+    String? directoryPath,
+  });
 
   /// Restores data from a backup file
   /// [filePath] - Path to the backup file

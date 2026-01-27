@@ -104,8 +104,18 @@ class ProductDetailScreen extends ConsumerWidget {
 
   Widget _buildMobileLayout(
       BuildContext context, WidgetRef ref, Product product) {
+    // Calculate bottom padding based on device type to account for bottom nav
+    final bottomPadding = context.isMobile
+        ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+        : AppDimensions.spacing16;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: EdgeInsets.only(
+        left: AppDimensions.spacing16,
+        right: AppDimensions.spacing16,
+        top: AppDimensions.spacing16,
+        bottom: bottomPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

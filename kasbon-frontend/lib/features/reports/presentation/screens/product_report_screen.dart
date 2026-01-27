@@ -6,6 +6,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../shared/modern/modern.dart';
 import '../../domain/entities/product_report.dart';
 import '../providers/report_provider.dart';
@@ -80,13 +81,21 @@ class _ProductReportScreenState extends ConsumerState<ProductReportScreen> {
   }
 
   Widget _buildProductList(BuildContext context, List<ProductReport> products) {
+    // Calculate bottom padding based on device type to account for bottom nav
+    final bottomPadding = context.isMobile
+        ? AppDimensions.bottomNavHeight + AppDimensions.spacing16
+        : AppDimensions.spacing16;
+
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing8,
+      padding: EdgeInsets.only(
+        left: AppDimensions.spacing16,
+        right: AppDimensions.spacing16,
+        top: AppDimensions.spacing8,
+        bottom: bottomPadding,
       ),
       itemCount: products.length,
-      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.spacing8),
+      separatorBuilder: (_, __) =>
+          const SizedBox(height: AppDimensions.spacing8),
       itemBuilder: (context, index) {
         final product = products[index];
         return _buildProductCard(context, product, index + 1);
@@ -114,7 +123,8 @@ class _ProductReportScreenState extends ConsumerState<ProductReportScreen> {
                 height: 28,
                 decoration: BoxDecoration(
                   color: _getRankColor(rank).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusSmall),
                 ),
                 child: Center(
                   child: Text(
