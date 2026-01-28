@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -55,16 +57,27 @@ class CartItemRow extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (productImage != null) {
+    if (productImage != null && productImage!.isNotEmpty) {
+      final isLocalFile =
+          productImage!.startsWith('/') || productImage!.startsWith('file://');
+
       return ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        child: Image.network(
-          productImage!,
-          width: AppDimensions.avatarLarge,
-          height: AppDimensions.avatarLarge,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildPlaceholder(),
-        ),
+        child: isLocalFile
+            ? Image.file(
+                File(productImage!.replaceFirst('file://', '')),
+                width: AppDimensions.avatarLarge,
+                height: AppDimensions.avatarLarge,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildPlaceholder(),
+              )
+            : Image.network(
+                productImage!,
+                width: AppDimensions.avatarLarge,
+                height: AppDimensions.avatarLarge,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildPlaceholder(),
+              ),
       );
     }
     return _buildPlaceholder();

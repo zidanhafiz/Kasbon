@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_dimensions.dart';
@@ -12,6 +13,7 @@ import '../../../../shared/modern/modern.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/create_product.dart';
 import '../providers/products_provider.dart';
+import '../widgets/product_image_picker.dart';
 
 /// Screen for adding or editing a product
 class ProductFormScreen extends ConsumerStatefulWidget {
@@ -39,6 +41,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final _barcodeController = TextEditingController();
 
   String _selectedUnit = 'pcs';
+  String? _imagePath;
+  late String _tempProductId;
   Product? _existingProduct;
 
   final List<String> _units = [
@@ -59,6 +63,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     // Set default values
     _stockController.text = '0';
     _minStockController.text = '5';
+    // Generate a temporary product ID for new products (used for image naming)
+    _tempProductId = widget.productId ?? const Uuid().v4();
   }
 
   @override
@@ -84,6 +90,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _barcodeController.text = product.barcode ?? '';
     // Safely set unit - default to 'pcs' if unit not in list
     _selectedUnit = _units.contains(product.unit) ? product.unit : 'pcs';
+    _imagePath = product.imageUrl;
   }
 
   Future<void> _submitForm() async {
@@ -105,6 +112,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         minStock: int.parse(_minStockController.text),
         barcode: barcode.isNotEmpty ? barcode : null,
         unit: _selectedUnit,
+        imageUrl: _imagePath,
       );
       await formNotifier.updateProduct(updatedProduct);
     } else {
@@ -117,6 +125,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         minStock: int.parse(_minStockController.text),
         barcode: barcode.isNotEmpty ? barcode : null,
         unit: _selectedUnit,
+        imageUrl: _imagePath,
       );
       await formNotifier.createProduct(params);
     }
@@ -222,6 +231,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildImageCard(),
+            const SizedBox(height: AppDimensions.spacing16),
             _buildInfoCard(),
             const SizedBox(height: AppDimensions.spacing16),
             _buildPriceCard(),
@@ -246,11 +257,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left Column: Informasi Dasar + Stok
+            // Left Column: Foto + Informasi Dasar + Stok
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _buildImageCard(),
+                  const SizedBox(height: AppDimensions.spacing16),
                   _buildInfoCard(),
                   const SizedBox(height: AppDimensions.spacing16),
                   _buildStockCard(),
@@ -274,6 +287,28 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageCard() {
+    return ModernCard.outlined(
+      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader('Foto Produk'),
+          const SizedBox(height: AppDimensions.spacing12),
+          Center(
+            child: ProductImagePicker(
+              currentImagePath: _imagePath,
+              productId: _tempProductId,
+              onImageChanged: (path) {
+                setState(() => _imagePath = path);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

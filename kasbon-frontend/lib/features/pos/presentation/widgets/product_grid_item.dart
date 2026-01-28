@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -116,31 +118,50 @@ class ProductGridItem extends StatelessWidget {
 
   Widget _buildImage() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: const BorderRadius.vertical(
+        borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppDimensions.radiusLarge),
         ),
       ),
-      child: product.imageUrl != null
+      child: product.imageUrl != null && product.imageUrl!.isNotEmpty
           ? ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppDimensions.radiusLarge),
               ),
-              child: Image.network(
-                product.imageUrl!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (_, __, ___) => _buildPlaceholder(),
-              ),
+              child: _buildImageContent(),
             )
           : _buildPlaceholder(),
     );
   }
 
+  Widget _buildImageContent() {
+    final imagePath = product.imageUrl!;
+    final isLocalFile =
+        imagePath.startsWith('/') || imagePath.startsWith('file://');
+
+    if (isLocalFile) {
+      final file = File(imagePath.replaceFirst('file://', ''));
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+      );
+    }
+
+    return Image.network(
+      imagePath,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+    );
+  }
+
   Widget _buildPlaceholder() {
-    return Center(
+    return const Center(
       child: Icon(
         Icons.inventory_2_outlined,
         size: 48,

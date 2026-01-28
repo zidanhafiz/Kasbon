@@ -11,6 +11,7 @@ import '../../../../shared/modern/modern.dart';
 import '../../../reports/presentation/providers/profit_report_provider.dart';
 import '../../domain/entities/product.dart';
 import '../providers/products_provider.dart';
+import '../widgets/product_image.dart';
 import '../widgets/stock_indicator.dart';
 
 /// Screen displaying detailed information about a product
@@ -188,34 +189,11 @@ class ProductDetailScreen extends ConsumerWidget {
     final imageSize = isTablet ? 200.0 : 120.0;
 
     return Center(
-      child: Container(
-        width: imageSize,
-        height: imageSize,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        ),
-        child: product.imageUrl != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                child: Image.network(
-                  product.imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      _buildPlaceholderIcon(imageSize),
-                ),
-              )
-            : _buildPlaceholderIcon(imageSize),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderIcon(double size) {
-    return Center(
-      child: Icon(
-        Icons.inventory_2_outlined,
-        color: AppColors.textTertiary,
-        size: size * 0.4,
+      child: ProductImage(
+        imagePath: product.imageUrl,
+        size: imageSize,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+        placeholderIconSize: imageSize * 0.4,
       ),
     );
   }

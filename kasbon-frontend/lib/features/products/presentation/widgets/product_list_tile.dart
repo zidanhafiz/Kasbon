@@ -5,6 +5,7 @@ import '../../../../config/theme/app_dimensions.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/product.dart';
+import 'product_image.dart';
 import 'stock_indicator.dart';
 
 /// List tile widget for displaying a product in a list
@@ -34,25 +35,11 @@ class ProductListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Product Image Placeholder
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
-              ),
-              child: product.imageUrl != null
-                  ? ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusSmall),
-                      child: Image.network(
-                        product.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
-                      ),
-                    )
-                  : _buildPlaceholderIcon(),
+            // Product Image
+            ProductImage(
+              imagePath: product.imageUrl,
+              size: 56,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
             ),
             const SizedBox(width: AppDimensions.spacing12),
 
@@ -109,13 +96,4 @@ class ProductListTile extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderIcon() {
-    return const Center(
-      child: Icon(
-        Icons.inventory_2_outlined,
-        color: AppColors.textTertiary,
-        size: AppDimensions.iconLarge,
-      ),
-    );
-  }
 }

@@ -68,3 +68,12 @@ class FileException extends AppException {
     super.originalError,
   });
 }
+
+/// Exception for image storage operations
+class ImageStorageException extends AppException {
+  const ImageStorageException({
+    required super.message,
+    super.code,
+    super.originalError,
+  });
+}

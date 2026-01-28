@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -66,15 +68,7 @@ class ProductGridItem extends StatelessWidget {
                                   top:
                                       Radius.circular(AppDimensions.radiusMedium),
                                 ),
-                                child: Image.network(
-                                  product.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return _buildPlaceholderIcon();
-                                  },
-                                ),
+                                child: _buildImage(),
                               )
                             : _buildPlaceholderIcon(),
                   ),
@@ -178,6 +172,31 @@ class ProductGridItem extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    final imagePath = product.imageUrl!;
+    final isLocalFile =
+        imagePath.startsWith('/') || imagePath.startsWith('file://');
+
+    if (isLocalFile) {
+      final file = File(imagePath.replaceFirst('file://', ''));
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
+      );
+    }
+
+    return Image.network(
+      imagePath,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
     );
   }
 

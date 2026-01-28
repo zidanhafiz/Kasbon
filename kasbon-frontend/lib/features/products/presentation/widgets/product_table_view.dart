@@ -12,6 +12,7 @@ import '../../../../shared/modern/components/data_display/modern_data_table.dart
 import '../../../../shared/modern/components/data_display/modern_table_column.dart';
 import '../../domain/entities/product.dart';
 import '../providers/product_selection_provider.dart';
+import 'product_image.dart';
 
 /// Table view widget for product list
 /// Displays products in a tabular format with selection support
@@ -232,30 +233,11 @@ class _ProductTableViewState extends ConsumerState<ProductTableView> {
 
   Widget _buildProductImage(Product product, bool isMobile) {
     final size = isMobile ? 36.0 : 48.0;
-    return ClipRRect(
+    return ProductImage(
+      imagePath: product.imageUrl,
+      size: size,
       borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
-      child: Container(
-        width: size,
-        height: size,
-        color: AppColors.surfaceVariant,
-        child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-            ? Image.network(
-                product.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildImagePlaceholder(isMobile),
-              )
-            : _buildImagePlaceholder(isMobile),
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder(bool isMobile) {
-    return Center(
-      child: Icon(
-        Icons.inventory_2_outlined,
-        size: isMobile ? 18 : 24,
-        color: AppColors.textTertiary,
-      ),
+      placeholderIconSize: isMobile ? 18 : 24,
     );
   }
 

@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/services/backup_service.dart';
+import '../../core/services/image_storage/image_storage_service.dart';
+import '../../core/services/image_storage/local_image_storage_service.dart';
 import '../../features/backup/data/repositories/backup_repository_impl.dart';
 import '../../features/backup/domain/repositories/backup_repository.dart';
 import '../../features/backup/domain/usecases/create_backup.dart';
@@ -83,6 +85,13 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<DatabaseHelper>(databaseHelper);
 
   // ===========================================
+  // IMAGE STORAGE SERVICE
+  // ===========================================
+  getIt.registerLazySingleton<ImageStorageService>(
+    () => LocalImageStorageService(),
+  );
+
+  // ===========================================
   // PRODUCTS FEATURE
   // ===========================================
 
@@ -102,7 +111,10 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => SearchProducts(getIt<ProductRepository>()));
   getIt.registerLazySingleton(() => CreateProduct(getIt<ProductRepository>()));
   getIt.registerLazySingleton(() => UpdateProduct(getIt<ProductRepository>()));
-  getIt.registerLazySingleton(() => DeleteProduct(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(() => DeleteProduct(
+        getIt<ProductRepository>(),
+        getIt<ImageStorageService>(),
+      ));
   getIt.registerLazySingleton(
       () => GetPaginatedProducts(getIt<ProductRepository>()));
 

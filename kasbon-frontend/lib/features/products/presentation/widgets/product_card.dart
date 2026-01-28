@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -63,14 +65,34 @@ class ProductCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppDimensions.radiusLarge),
         ),
-        child: productImage != null
-            ? Image.network(
-                productImage!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildPlaceholder(),
-              )
-            : _buildPlaceholder(),
+        child: _buildImageContent(),
       ),
+    );
+  }
+
+  Widget _buildImageContent() {
+    if (productImage == null || productImage!.isEmpty) {
+      return _buildPlaceholder();
+    }
+
+    // Check if it's a local file path
+    final isLocalFile = productImage!.startsWith('/') ||
+        productImage!.startsWith('file://');
+
+    if (isLocalFile) {
+      final file = File(productImage!.replaceFirst('file://', ''));
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+      );
+    }
+
+    // Network URL
+    return Image.network(
+      productImage!,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _buildPlaceholder(),
     );
   }
 
