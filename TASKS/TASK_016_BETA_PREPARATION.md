@@ -1,4 +1,4 @@
-# TASK_016: Beta Preparation
+# TASK_016: Open Source Release Preparation
 
 **Priority:** P1 (Core)
 **Complexity:** MEDIUM
@@ -9,7 +9,7 @@
 
 ## Objective
 
-Prepare the app for beta release including bug fixes, performance optimization, Play Store assets, and internal testing setup.
+Prepare the app for open source release on GitHub. This includes bug fixes, performance optimization, comprehensive documentation, and setting up the repository for community contributions.
 
 ---
 
@@ -48,58 +48,63 @@ Prepare the app for beta release including bug fixes, performance optimization, 
 - [ ] Update app name in Android manifest
 - [ ] Add app version info to About screen
 
-### 4. Play Store Assets
+### 4. Open Source Documentation
 
-#### Screenshots (8 required)
-- [ ] Dashboard screenshot
-- [ ] POS screen screenshot
-- [ ] Product list screenshot
-- [ ] Transaction history screenshot
-- [ ] Receipt screenshot
-- [ ] Reports screenshot
-- [ ] Settings screenshot
-- [ ] Feature highlight screenshot
+#### README.md (Root)
+- [ ] Project title and description
+- [ ] Feature highlights with screenshots
+- [ ] Tech stack overview
+- [ ] Quick start / installation guide
+- [ ] Building from source instructions
+- [ ] Project structure overview
+- [ ] Link to CONTRIBUTING.md
+- [ ] License badge and info
+- [ ] Credits and acknowledgments
 
-#### Graphics
-- [ ] Feature graphic (1024x500)
-- [ ] Promo graphic (optional)
+#### CONTRIBUTING.md
+- [ ] How to contribute (fork, branch, PR)
+- [ ] Code style guidelines
+- [ ] Commit message format
+- [ ] Pull request template
+- [ ] Issue reporting guidelines
+- [ ] Development setup instructions
+- [ ] Testing requirements before PR
 
-#### Store Listing Content
-- [ ] App title (30 chars max)
-- [ ] Short description (80 chars)
-- [ ] Full description (4000 chars)
-- [ ] Keywords
-- [ ] Privacy policy URL
-- [ ] Support email
+#### LICENSE
+- [ ] Choose appropriate license (MIT, Apache 2.0, or GPL)
+- [ ] Add LICENSE file to root
 
-### 5. Play Console Setup
+#### Other Documentation
+- [ ] CODE_OF_CONDUCT.md
+- [ ] SECURITY.md (for reporting vulnerabilities)
+- [ ] CHANGELOG.md (version history)
 
-- [ ] Create app in Play Console
-- [ ] Fill store listing
-- [ ] Upload screenshots and graphics
-- [ ] Set content rating (questionnaire)
-- [ ] Set pricing (Free)
-- [ ] Configure data safety form
-- [ ] Setup internal testing track
+### 5. GitHub Repository Setup
 
-### 6. Build Configuration
+- [ ] Create public repository on GitHub
+- [ ] Add repository description and topics
+- [ ] Configure issue templates (bug report, feature request)
+- [ ] Configure pull request template
+- [ ] Setup branch protection for main branch
+- [ ] Add GitHub Actions for CI (build, test, lint)
+- [ ] Create initial GitHub release with APK
 
-- [ ] Configure release signing (keystore)
+### 6. Code Cleanup for Open Source
+
+- [ ] Remove any hardcoded credentials/secrets
+- [ ] Add .env.example for environment variables
+- [ ] Ensure .gitignore is comprehensive
+- [ ] Remove any proprietary/confidential code
+- [ ] Add inline code comments for complex logic
+- [ ] Verify all dependencies are open source compatible
+
+### 7. Build Configuration
+
 - [ ] Update version number (1.0.0+1)
 - [ ] Enable Proguard/R8 optimization
-- [ ] Build release APK/AAB
+- [ ] Build release APK
 - [ ] Test release build on device
-
-### 7. Analytics & Crash Reporting
-
-- [ ] Setup Firebase Analytics (basic)
-- [ ] Setup Sentry for crash reporting
-- [ ] Add key event tracking:
-  - App open
-  - First transaction
-  - Product created
-  - Transaction completed
-  - Report viewed
+- [ ] Document signing process for contributors
 
 ---
 
@@ -113,7 +118,7 @@ Prepare the app for beta release including bug fixes, performance optimization, 
 
 ### Suggested Design
 ```
-Background: Orange (#FF6B35)
+Background: Blue (#2563EB - AppColors.primary)
 Icon: Stylized "K" or cash register
 Style: Flat, modern, minimal
 ```
@@ -129,28 +134,162 @@ mipmap-xxxhdpi: 192x192
 
 ---
 
-## Play Store Listing
+## README Template
 
-### Title
-```
-KASBON - Kasir Digital UMKM
+```markdown
+# KASBON - Kasir Digital UMKM 🇮🇩
+
+Aplikasi kasir gratis untuk warung, toko & UMKM Indonesia. Offline-first, mudah digunakan!
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Android-green.svg)
+
+## ✨ Features
+
+- 📦 **Product Management** - Kelola produk dengan mudah
+- 🛒 **Point of Sale** - Kasir cepat dan simpel
+- 📊 **Dashboard** - Lihat ringkasan penjualan
+- 💰 **Profit Tracking** - Lacak keuntungan, bukan hanya omzet
+- 📝 **Debt Tracking** - Catat hutang pelanggan
+- 📱 **Offline First** - Bekerja tanpa internet
+- 🔄 **Backup/Restore** - Amankan data Anda
+
+## 📱 Screenshots
+
+[Add screenshots here]
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter 3.x
+- Android SDK
+
+### Installation
+\`\`\`bash
+git clone https://github.com/yourusername/kasbon.git
+cd kasbon/kasbon-frontend
+flutter pub get
+flutter run
+\`\`\`
+
+### Building APK
+\`\`\`bash
+flutter build apk --release
+\`\`\`
+
+## 🏗️ Architecture
+
+Clean Architecture with feature-based modules. See [CLAUDE.md](CLAUDE.md) for details.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
+## 🙏 Acknowledgments
+
+- Built with Flutter & Riverpod
+- Designed for Indonesian UMKM
 ```
 
-### Short Description (80 chars)
-```
-Aplikasi kasir gratis untuk warung, toko & UMKM. Offline, mudah & tanpa ribet!
+---
+
+## CONTRIBUTING Template
+
+```markdown
+# Contributing to KASBON
+
+Terima kasih atas minat Anda untuk berkontribusi! 🎉
+
+## How to Contribute
+
+1. Fork repository ini
+2. Buat branch baru (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buka Pull Request
+
+## Development Setup
+
+1. Install Flutter 3.x
+2. Clone repo dan jalankan `flutter pub get`
+3. Jalankan `dart run build_runner build` untuk code generation
+4. Run `flutter test` untuk memastikan semua test passing
+
+## Code Style
+
+- Gunakan `dart format` sebelum commit
+- Ikuti arsitektur Clean Architecture yang ada
+- Gunakan Modern Widget Library untuk UI
+- Tulis test untuk fitur baru
+
+## Commit Messages
+
+Format: `type: description`
+
+Types:
+- `feat`: Fitur baru
+- `fix`: Bug fix
+- `docs`: Dokumentasi
+- `style`: Formatting
+- `refactor`: Refactoring
+- `test`: Testing
+- `chore`: Maintenance
+
+## Pull Request
+
+- Pastikan semua test passing
+- Update dokumentasi jika diperlukan
+- Sertakan screenshot untuk perubahan UI
 ```
 
-### Full Description (4000 chars)
-See DOCS/PROJECT_BRIEF.md for full description template.
+---
 
-Key points to highlight:
-- Free forever (Free tier)
-- Offline-first (works without internet)
-- Simple (designed for non-tech users)
-- Profit tracking (unique feature)
-- Debt tracking (Indonesian-specific)
-- Indonesian support
+## GitHub Actions CI
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kasbon-frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build APK
+        run: flutter build apk --release
+```
 
 ---
 
@@ -159,20 +298,16 @@ Key points to highlight:
 ### Before Build
 - [ ] All tests passing
 - [ ] No debug logs in production code
-- [ ] API keys secured (if any)
 - [ ] Correct version number
-- [ ] Release notes prepared
+- [ ] CHANGELOG.md updated
+- [ ] README screenshots updated
 
 ### Build Commands
 ```bash
-# Generate release AAB (for Play Store)
-flutter build appbundle --release
-
-# Generate release APK (for direct install)
+# Generate release APK (for direct install/GitHub release)
 flutter build apk --release
 
-# Output locations:
-# AAB: build/app/outputs/bundle/release/app-release.aab
+# Output location:
 # APK: build/app/outputs/apk/release/app-release.apk
 ```
 
@@ -182,63 +317,55 @@ flutter build apk --release
 - [ ] Check app size (target < 50MB)
 - [ ] Verify no crashes
 
----
-
-## Beta Testing Plan
-
-### Internal Testing (5-10 users)
-**Duration:** 1-2 weeks
-**Testers:** Friends, family, close contacts with small businesses
-
-**Goals:**
-- Find critical bugs
-- Validate core flows
-- Test on various devices
-
-**Feedback Collection:**
-- Google Form survey
-- WhatsApp group
-- In-app feedback
-
-### Closed Beta (50-100 users)
-**Duration:** 2-4 weeks
-**Testers:** UMKM community members, early adopters
-
-**Setup:**
-1. Create tester list in Play Console
-2. Distribute invite link
-3. Monitor feedback and crashes
-
-**Incentive:**
-- Early access
-- Lifetime Pro discount (50%)
-- Recognition in app
+### GitHub Release
+- [ ] Create git tag (v1.0.0)
+- [ ] Create GitHub release
+- [ ] Upload APK as release asset
+- [ ] Write release notes
 
 ---
 
-## Analytics Events
+## Community & Feedback
 
-### Key Events to Track
-```dart
-// Event names
-const kEventAppOpen = 'app_open';
-const kEventFirstTransaction = 'first_transaction';
-const kEventProductCreated = 'product_created';
-const kEventTransactionCompleted = 'transaction_completed';
-const kEventReportViewed = 'report_viewed';
-const kEventBackupCreated = 'backup_created';
-const kEventDebtCreated = 'debt_created';
-const kEventDebtPaid = 'debt_paid';
+### Feedback Channels
+- GitHub Issues (bugs, feature requests)
+- GitHub Discussions (questions, ideas)
+- README contact info
 
-// Implementation example
-FirebaseAnalytics.instance.logEvent(
-  name: kEventTransactionCompleted,
-  parameters: {
-    'total': total,
-    'item_count': itemCount,
-    'payment_method': paymentMethod,
-  },
-);
+### Issue Templates
+
+**Bug Report:**
+```markdown
+**Describe the bug**
+A clear description of the bug.
+
+**To Reproduce**
+1. Go to '...'
+2. Click on '...'
+3. See error
+
+**Expected behavior**
+What you expected to happen.
+
+**Screenshots**
+If applicable.
+
+**Device Info:**
+- Device: [e.g. Samsung A51]
+- Android Version: [e.g. 11]
+- App Version: [e.g. 1.0.0]
+```
+
+**Feature Request:**
+```markdown
+**Is your feature request related to a problem?**
+A clear description of the problem.
+
+**Describe the solution you'd like**
+What you want to happen.
+
+**Additional context**
+Any other context or screenshots.
 ```
 
 ---
@@ -252,30 +379,37 @@ FirebaseAnalytics.instance.logEvent(
 - [ ] UI is consistent across screens
 - [ ] All text is in Indonesian
 
-### Play Store
-- [ ] Store listing complete
-- [ ] All screenshots uploaded
-- [ ] Privacy policy published
-- [ ] Content rating completed
-- [ ] App passes Play Store review
+### Documentation
+- [ ] README.md complete with screenshots
+- [ ] CONTRIBUTING.md with clear guidelines
+- [ ] LICENSE file added
+- [ ] CODE_OF_CONDUCT.md added
+- [ ] CHANGELOG.md started
 
-### Beta
-- [ ] Internal testing track live
-- [ ] First 5 testers invited
-- [ ] Feedback mechanism in place
+### GitHub Repository
+- [ ] Repository is public
+- [ ] Issue templates configured
+- [ ] PR template configured
+- [ ] CI/CD workflow working
+- [ ] First release published with APK
+
+### Code Quality
+- [ ] No secrets/credentials in code
+- [ ] .gitignore comprehensive
+- [ ] All dependencies open source compatible
+- [ ] Code comments for complex logic
 
 ---
 
 ## Notes
 
-### Privacy Policy
-Create simple privacy policy covering:
-- Data collected (local only for Free tier)
-- How data is used
-- Third-party services (Firebase Analytics)
-- Contact information
+### Recommended License
 
-Host on Google Docs or simple webpage.
+**MIT License** - Most permissive, allows commercial use, modification, distribution. Good for maximum adoption.
+
+Alternatively:
+- **Apache 2.0** - Similar to MIT but with patent protection
+- **GPL v3** - Copyleft, requires derivatives to be open source
 
 ### Testing Devices
 Test on at least:
@@ -283,15 +417,16 @@ Test on at least:
 - Mid-range: 4GB RAM, Android 11
 - High-end: 8GB RAM, Android 14
 
-### Beta Feedback Template
-```
-1. Nama Toko:
-2. Jenis Usaha:
-3. Fitur yang paling berguna:
-4. Masalah yang ditemukan:
-5. Saran perbaikan:
-6. Bintang 1-5:
-```
+### Repository Topics
+Add these topics for discoverability:
+- `flutter`
+- `pos`
+- `point-of-sale`
+- `indonesia`
+- `umkm`
+- `offline-first`
+- `small-business`
+- `kasir`
 
 ---
 
@@ -303,5 +438,5 @@ Test on at least:
 
 ## Next Task
 
-After beta release is stable, proceed to Phase 2:
+After open source release is ready, proceed to Phase 2:
 - [TASK_017_AUTHENTICATION.md](./TASK_017_AUTHENTICATION.md)
