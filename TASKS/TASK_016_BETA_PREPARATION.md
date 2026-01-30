@@ -1,5 +1,7 @@
 # TASK_016: Open Source Release Preparation
 
+IMPORTANT: I need to do this task after all features (task 001 - 021) was implemented
+
 **Priority:** P1 (Core)
 **Complexity:** MEDIUM
 **Phase:** MVP - Quality
