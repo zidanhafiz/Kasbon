@@ -4,20 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-KASBON POS Flutter frontend - offline-first POS app for Indonesian UMKM. See `../CLAUDE.md` for full project context including database schema, feature priorities, and development phases.
+KASBON POS Flutter frontend - offline-first POS app for Indonesian UMKM with dual-mode architecture (local SQLite default, optional Supabase cloud sync). See `../CLAUDE.md` for full project context including database schema, feature priorities, and development phases.
 
 ## Development Commands
 
 ```bash
+# Local mode (default)
 flutter pub get              # Install dependencies
-flutter run                  # Run app (requires device/emulator)
+flutter run                  # Run app (local mode)
 flutter analyze              # Analyze code for issues
 flutter test                 # Run all tests
 flutter test test/path/      # Run specific test
 dart run build_runner build  # Generate code (freezed, riverpod, json)
 dart format lib/             # Format code
-flutter build apk            # Build Android APK
-flutter build appbundle      # Build Android App Bundle
+flutter build apk            # Build Android APK (local mode)
+flutter build appbundle      # Build Android App Bundle (local mode)
+
+# Supabase mode (opt-in)
+flutter run --dart-define=APP_MODE=supabase --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
+flutter build apk --dart-define=APP_MODE=supabase --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
 ```
 
 ## Architecture
@@ -33,6 +38,7 @@ lib/
 │   ├── usecase/                  # Base UseCase<T, Params> class
 │   └── utils/                    # Currency/date formatters, validators
 ├── config/
+│   ├── app_config.dart           # Dual-mode config (local/supabase)
 │   ├── database/                 # DatabaseHelper, migrations, schema
 │   ├── di/injection.dart         # GetIt service locator setup
 │   ├── routes/app_router.dart    # GoRouter with ShellRoute navigation
@@ -56,6 +62,43 @@ lib/
     │   ├── components/           # Buttons, cards, inputs, layout, feedback
     │   └── utils/                # Variants (ModernSize, etc.)
     └── widgets/                  # DEPRECATED: Legacy widgets (do not use)
+```
+
+## App Modes & Conditional Features (CRITICAL)
+
+The app uses `AppConfig` (`lib/config/app_config.dart`) for compile-time mode switching:
+- **Local mode** (default): SQLite only, no Supabase dependency
+- **Supabase mode**: `--dart-define=APP_MODE=supabase` enables cloud sync + auth
+
+**Rules:**
+1. All features MUST work in local mode without Supabase
+2. Guard Supabase-only code behind `AppConfig.isSupabaseMode`
+3. Never add `supabase_flutter` as unconditional dependency
+
+**Pattern — Conditional DI (in `injection.dart`):**
+```dart
+// Supabase services registered only in supabase mode
+if (AppConfig.isSupabaseMode) {
+  getIt.registerLazySingleton<AuthRemoteDataSource>(...);
+  getIt.registerLazySingleton<SyncService>(...);
+}
+```
+
+**Pattern — Conditional UI:**
+```dart
+// Show account section only in supabase mode
+if (AppConfig.isSupabaseMode) ...[
+  ModernSectionHeader(title: 'Akun'),
+  ModernListTile(title: 'Login', onTap: onLogin),
+],
+```
+
+**Pattern — Conditional Routes:**
+```dart
+if (AppConfig.isSupabaseMode) ...[
+  GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+  GoRoute(path: '/account', builder: (_, __) => const AccountScreen()),
+],
 ```
 
 ## Key Patterns
@@ -345,6 +388,7 @@ All dependencies registered in `lib/config/di/injection.dart`:
 2. DataSources (feature-specific)
 3. Repositories
 4. UseCases
+5. **Supabase services** — registered inside `if (AppConfig.isSupabaseMode)` block only
 
 Access anywhere: `getIt<ProductRepository>()`
 
@@ -365,15 +409,16 @@ GoRouter with ShellRoute for bottom navigation:
 
 ## Adding a New Feature
 
-1. Create feature folder structure under `lib/features/<name>/`
-2. Define entity in `domain/entities/`
-3. Define repository interface in `domain/repositories/`
-4. Implement datasource in `data/datasources/`
-5. Implement repository in `data/repositories/`
-6. Create use cases in `domain/usecases/`
-7. Register all in `injection.dart`
-8. Add providers in `presentation/providers/`
-9. Build screens using Modern widgets:
+1. **Check if feature is mode-specific:** If supabase-only (auth, sync), guard all code behind `AppConfig.isSupabaseMode`
+2. Create feature folder structure under `lib/features/<name>/`
+3. Define entity in `domain/entities/`
+4. Define repository interface in `domain/repositories/`
+5. Implement datasource in `data/datasources/`
+6. Implement repository in `data/repositories/`
+7. Create use cases in `domain/usecases/`
+8. Register all in `injection.dart` (inside `if (AppConfig.isSupabaseMode)` block if supabase-only)
+9. Add providers in `presentation/providers/`
+10. Build screens using Modern widgets:
    - Import: `import 'package:kasbon_frontend/shared/modern/modern.dart';`
    - Use `ModernAppBar.*` for app bars
    - Use `ModernButton.*` for all buttons
@@ -384,4 +429,4 @@ GoRouter with ShellRoute for bottom navigation:
 
 ## Current Status
 
-Track progress in `../TASKS/PROGRESS.md`. Current phase: Setup complete, starting MVP P0 features.
+Track progress in `../TASKS/PROGRESS.md`. MVP P0 and P1 features complete. Auth feature was implemented then reverted (Feb 2026) — `supabase_flutter` removed from pubspec.yaml. `AppConfig` dual-mode system is in place for future Phase 2 (supabase-mode) features.

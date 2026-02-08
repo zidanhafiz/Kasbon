@@ -4,13 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-KASBON (Kasir Bisnis Online) is an offline-first POS application for Indonesian small businesses (UMKM) built with Flutter and Supabase. The app prioritizes simplicity, offline reliability, and profit tracking.
+KASBON (Kasir Bisnis Online) is an offline-first POS application for Indonesian small businesses (UMKM) built with Flutter. The app supports two modes: **local mode** (SQLite only, default) and **supabase mode** (SQLite + Supabase cloud sync, opt-in). It prioritizes simplicity, offline reliability, and profit tracking.
 
 **Key Differentiators:**
 - 100% offline-first (SQLite) - works without internet
 - Profit tracking built-in (not just revenue)
 - Debt tracking (hutang) - culture-specific for Indonesia
 - Designed for low-end devices (2GB RAM, Android 5.0+)
+
+## App Modes (CRITICAL)
+
+KASBON uses a compile-time flag system (`AppConfig`) to support two modes:
+
+| Mode | Default? | Description | Build Command |
+|------|----------|-------------|---------------|
+| **Local** | Yes | SQLite only, no Supabase dependency | `flutter run` / `flutter build apk` |
+| **Supabase** | No | SQLite + Supabase cloud sync, auth | `flutter run --dart-define=APP_MODE=supabase --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...` |
+
+**Config:** `lib/config/app_config.dart` — use `AppConfig.isLocalMode` / `AppConfig.isSupabaseMode`
+
+**Rules for implementing features:**
+1. **All features MUST work in local mode** without any Supabase dependency
+2. Supabase-only features (auth, cloud sync) MUST be guarded behind `AppConfig.isSupabaseMode`
+3. **NEVER** add `supabase_flutter` as an unconditional dependency in pubspec.yaml
+4. DI registrations for Supabase services go inside `if (AppConfig.isSupabaseMode)` blocks in `injection.dart`
+5. UI elements for cloud-only features (account, sync status) must be shown conditionally
+6. Routes for Supabase-only screens must be registered conditionally
 
 ## Project Structure
 
@@ -28,17 +47,30 @@ Kasbon/
 
 ## Development Commands
 
-### Flutter (run from kasbon-frontend/)
+### Flutter — Local Mode (run from kasbon-frontend/)
 ```bash
 flutter pub get              # Install dependencies
-flutter run                  # Run app
-flutter build apk            # Build Android APK
-flutter build appbundle      # Build Android App Bundle
+flutter run                  # Run app (local mode, default)
+flutter build apk            # Build Android APK (local mode)
+flutter build appbundle      # Build Android App Bundle (local mode)
 flutter analyze              # Analyze code
 flutter test                 # Run all tests
 flutter test test/path/      # Run specific test directory
 dart run build_runner build  # Generate code (freezed, riverpod, json)
 dart format lib/             # Format code
+```
+
+### Flutter — Supabase Mode (run from kasbon-frontend/)
+```bash
+flutter run \
+  --dart-define=APP_MODE=supabase \
+  --dart-define=SUPABASE_URL=https://xxx.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-key
+
+flutter build apk \
+  --dart-define=APP_MODE=supabase \
+  --dart-define=SUPABASE_URL=https://xxx.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-key
 ```
 
 ### Supabase Local Development (run from project root)
@@ -63,6 +95,7 @@ lib/
 │   ├── utils/               # Formatters (currency, date), validators
 │   └── usecase/             # Base UseCase class
 ├── config/
+│   ├── app_config.dart      # Dual-mode config (local/supabase)
 │   ├── di/                  # Dependency injection (GetIt)
 │   ├── routes/              # Navigation (GoRouter)
 │   └── theme/               # Colors, typography, dimensions
@@ -94,6 +127,7 @@ lib/
 - **Local Database:** SQLite (sqflite) - offline-first
 - **Code Generation:** Freezed, JSON Serializable
 - **DI:** GetIt
+- **Cloud (conditional):** Supabase — only added when `APP_MODE=supabase`, not a default dependency
 
 ## Modern Widget Library (REQUIRED)
 
@@ -155,7 +189,7 @@ Follow TASKS/ directory in numerical order. Check TASKS/PROGRESS.md for current 
 2. **MVP P0 (004-009):** Products, POS, transactions, dashboard, receipt, stock
 3. **MVP P1 (010-014):** Profit, debt tracking, reports, settings, backup
 4. **Testing (015-016):** Unit/widget tests, beta prep
-5. **Phase 2 (017-021):** Auth, cloud sync, advanced reports, QRIS, deployment
+5. **Phase 2 (017-021):** Auth, cloud sync, advanced reports, QRIS, deployment *(supabase-mode features — guard behind `AppConfig.isSupabaseMode`)*
 
 ## Feature Priorities
 
