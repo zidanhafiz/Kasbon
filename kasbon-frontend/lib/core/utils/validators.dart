@@ -86,6 +86,25 @@ class Validators {
     return null;
   }
 
+  /// Validate email format
+  static bool isValidEmail(String value) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(value.trim());
+  }
+
+  /// Validate email with error message
+  static String? email(String? value, {bool required = true}) {
+    if (value == null || value.trim().isEmpty) {
+      return required ? 'Email wajib diisi' : null;
+    }
+    if (!isValidEmail(value)) {
+      return 'Format email tidak valid';
+    }
+    return null;
+  }
+
   /// Validate barcode format
   static String? barcode(String? value) {
     if (value == null || value.trim().isEmpty) {

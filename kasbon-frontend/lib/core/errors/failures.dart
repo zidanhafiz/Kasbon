@@ -75,3 +75,65 @@ class FileFailure extends Failure {
     super.code,
   });
 }
+
+/// Failure for authentication operations
+class AuthFailure extends Failure {
+  const AuthFailure({
+    required super.message,
+    super.code,
+  });
+
+  /// Factory for invalid credentials error
+  factory AuthFailure.invalidCredentials() => const AuthFailure(
+        message: 'Email atau password salah',
+        code: 'invalid_credentials',
+      );
+
+  /// Factory for email not confirmed error
+  factory AuthFailure.emailNotConfirmed() => const AuthFailure(
+        message: 'Email belum dikonfirmasi. Cek inbox Anda',
+        code: 'email_not_confirmed',
+      );
+
+  /// Factory for user already exists error
+  factory AuthFailure.userAlreadyExists() => const AuthFailure(
+        message: 'Email sudah terdaftar',
+        code: 'user_already_exists',
+      );
+
+  /// Factory for weak password error
+  factory AuthFailure.weakPassword() => const AuthFailure(
+        message: 'Password terlalu lemah. Minimal 8 karakter',
+        code: 'weak_password',
+      );
+
+  /// Factory for invalid email format error
+  factory AuthFailure.invalidEmail() => const AuthFailure(
+        message: 'Format email tidak valid',
+        code: 'invalid_email',
+      );
+
+  /// Factory for network error
+  factory AuthFailure.networkError() => const AuthFailure(
+        message: 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda',
+        code: 'network_error',
+      );
+
+  /// Factory for session expired error
+  factory AuthFailure.sessionExpired() => const AuthFailure(
+        message: 'Sesi Anda telah berakhir. Silakan login kembali',
+        code: 'session_expired',
+      );
+
+  /// Factory for generic server error
+  factory AuthFailure.serverError() => const AuthFailure(
+        message: 'Terjadi kesalahan di server. Coba lagi nanti',
+        code: 'server_error',
+      );
+
+  /// Factory for generic/unknown error
+  factory AuthFailure.unknown([String? details]) => AuthFailure(
+        message: details ?? 'Terjadi kesalahan. Coba lagi nanti',
+        code: 'unknown',
+      );
+}

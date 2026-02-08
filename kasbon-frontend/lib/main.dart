@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/di/injection.dart';
 import 'config/routes/app_router.dart';
+import 'config/supabase/supabase_config.dart';
 import 'config/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 
@@ -35,7 +37,17 @@ void main() async {
   // Initialize Indonesian locale data for date formatting
   await initializeDateFormatting('id_ID', null);
 
-  // Configure dependency injection
+  // Initialize Supabase
+  // Uses PKCE flow for mobile security
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
+  );
+
+  // Configure dependency injection (after Supabase init)
   await configureDependencies();
 
   // Run the app

@@ -1,7 +1,18 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/services/backup_service.dart';
+import '../../features/auth/data/datasources/auth_local_datasource.dart';
+import '../../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_current_user.dart';
+import '../../features/auth/domain/usecases/reset_password.dart';
+import '../../features/auth/domain/usecases/sign_in.dart';
+import '../../features/auth/domain/usecases/sign_out.dart';
+import '../../features/auth/domain/usecases/sign_up.dart';
 import '../../core/services/image_storage/image_storage_service.dart';
 import '../../core/services/image_storage/local_image_storage_service.dart';
 import '../../features/backup/data/repositories/backup_repository_impl.dart';
@@ -85,11 +96,56 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<DatabaseHelper>(databaseHelper);
 
   // ===========================================
+  // CORE SERVICES
+  // ===========================================
+
+  // FlutterSecureStorage for secure local storage
+  getIt.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+      ),
+    ),
+  );
+
+  // SupabaseClient from initialized Supabase instance
+  getIt.registerLazySingleton<SupabaseClient>(
+    () => Supabase.instance.client,
+  );
+
+  // ===========================================
   // IMAGE STORAGE SERVICE
   // ===========================================
   getIt.registerLazySingleton<ImageStorageService>(
     () => LocalImageStorageService(),
   );
+
+  // ===========================================
+  // AUTH FEATURE
+  // ===========================================
+
+  // Data Sources
+  getIt.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(getIt<SupabaseClient>()),
+  );
+  getIt.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthLocalDataSourceImpl(getIt<FlutterSecureStorage>()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      remoteDataSource: getIt<AuthRemoteDataSource>(),
+      localDataSource: getIt<AuthLocalDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  getIt.registerLazySingleton(() => SignIn(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => SignUp(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => SignOut(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => GetCurrentUser(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => ResetPassword(getIt<AuthRepository>()));
 
   // ===========================================
   // PRODUCTS FEATURE
