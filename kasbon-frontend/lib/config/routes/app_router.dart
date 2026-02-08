@@ -24,9 +24,6 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/shop_profile_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_detail_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_list_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../shared/modern/modern.dart';
 
 /// Route names for the application
@@ -58,11 +55,6 @@ class AppRoutes {
   static const String designSystem = '/dev/design-system';
   static const String devSeed = '/dev/seed';
   static const String receipt = '/receipt/:transactionId';
-
-  // Auth routes
-  static const String authLogin = '/auth/login';
-  static const String authRegister = '/auth/register';
-  static const String authForgotPassword = '/auth/forgot-password';
 }
 
 /// Application router configuration using GoRouter
@@ -346,31 +338,6 @@ class AppRouter {
         },
       ),
 
-      // Auth routes (full-screen, outside shell)
-      GoRoute(
-        path: AppRoutes.authLogin,
-        name: 'auth-login',
-        pageBuilder: (context, state) => _buildPage(
-          state: state,
-          child: const LoginScreen(),
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.authRegister,
-        name: 'auth-register',
-        pageBuilder: (context, state) => _buildPage(
-          state: state,
-          child: const RegisterScreen(),
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.authForgotPassword,
-        name: 'auth-forgot-password',
-        pageBuilder: (context, state) => _buildPage(
-          state: state,
-          child: const ForgotPasswordScreen(),
-        ),
-      ),
     ],
 
     // Error handling
